@@ -17,7 +17,6 @@ typedef struct echiquier{
     U64 whiteKing;
 
     //Pieces noires
-
     U64 blackPawns;
     U64 blackRooks;
     U64 blackBishops;
