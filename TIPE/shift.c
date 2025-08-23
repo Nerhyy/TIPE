@@ -2,10 +2,10 @@
 
 //Shift de masques (voir systeme de coordonnee)
 U64 shift_south(U64 mask){
-    return (mask>>8 & ~row1);
+    return (mask>>8);
 }
 U64 shift_north(U64 mask){
-    return (mask<<8 & ~row8);
+    return (mask<<8);
 }
 U64 shift_east(U64 mask){
     return (mask<<1 & ~Afile);

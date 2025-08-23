@@ -5,8 +5,8 @@
 
 //####################################################### PRINCIPALE ######################################
 
-U64 b_attacks[64][2048]; //16KB
-U64 r_attacks[64][4096]; //64KB
+U64 b_attacks[64][2048]; 
+U64 r_attacks[64][4096]; 
 
 //Creation des tables
 gmagic bishop_table[64]; //1KB

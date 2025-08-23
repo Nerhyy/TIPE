@@ -76,40 +76,40 @@ void print_chessboard_white(chessboard* echiquier) {
             printf(" ");
         }
         else if((echiquier->whitePawns & maskIter) == maskIter){
-            printf("♙");
-        }
-        else if((echiquier->blackPawns & maskIter) == maskIter){
             printf("♟");
         }
+        else if((echiquier->blackPawns & maskIter) == maskIter){
+            printf("♙");
+        }
         else if((echiquier->whiteRooks & maskIter) == maskIter){
-            printf("♖");
-        }
-        else if((echiquier->whiteBishops & maskIter) == maskIter){
-            printf("♗");
-        }
-        else if((echiquier->whiteKnights & maskIter) == maskIter){
-            printf("♘");
-        }
-        else if((echiquier->blackRooks & maskIter) == maskIter){
             printf("♜");
         }
-        else if((echiquier->blackBishops & maskIter) == maskIter){
+        else if((echiquier->whiteBishops & maskIter) == maskIter){
             printf("♝");
         }
-        else if((echiquier->blackKnights & maskIter) == maskIter){
+        else if((echiquier->whiteKnights & maskIter) == maskIter){
             printf("♞");
         }
-        else if((echiquier->blackKing & maskIter) == maskIter){
-            printf("♚");
+        else if((echiquier->blackRooks & maskIter) == maskIter){
+            printf("♖");
         }
-        else if((echiquier->whiteKing & maskIter) == maskIter){
+        else if((echiquier->blackBishops & maskIter) == maskIter){
+            printf("♗");
+        }
+        else if((echiquier->blackKnights & maskIter) == maskIter){
+            printf("♘");
+        }
+        else if((echiquier->blackKing & maskIter) == maskIter){
             printf("♔");
         }
+        else if((echiquier->whiteKing & maskIter) == maskIter){
+            printf("♚");
+        }
         else if((echiquier->blackQueens & maskIter) == maskIter){
-            printf("♛");
+            printf("♕");
         }
         else if((echiquier->whiteQueens & maskIter) == maskIter){
-            printf("♕");
+            printf("♛");
         }
         //printf("valeur de i : %d \n", i); //DEBUG
         if (i != 7){ //Pour éviter de faire disparaitre le 1
@@ -125,6 +125,7 @@ void print_chessboard_white(chessboard* echiquier) {
     printf("\n");
     //printf("valeur de i (bis): %d \n", i); //DEBUG
     }
+    printf("\n");
 }
 
 

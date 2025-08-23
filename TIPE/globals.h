@@ -17,6 +17,7 @@ typedef struct echiquier{
     U64 whiteKing;
 
     //Pieces noires
+
     U64 blackPawns;
     U64 blackRooks;
     U64 blackBishops;
@@ -25,7 +26,6 @@ typedef struct echiquier{
     U64 blackKing;
 
 }chessboard;
-
 
 enum enumSquare { //serialized index for squares
     a1 = 0, b1, c1, d1, e1, f1, g1, h1,
@@ -37,6 +37,32 @@ enum enumSquare { //serialized index for squares
     a7, b7, c7, d7, e7, f7, g7, h7,
     a8, b8, c8, d8, e8, f8, g8, h8
 };
+
+
+//-------------- MOVE LIST -----------------------------------------------
+
+enum Piece{
+    EMPTY  = 0,
+    PAWN   = 1,
+    KNIGHT = 2,
+    BISHOP = 3,
+    ROOK   = 4,
+    QUEEN  = 5,
+    KING   = 6
+};
+
+typedef struct{
+    int from;
+    int to;
+    int piece;
+    int captured;
+    int promo;
+}move;
+
+typedef struct{
+    move moves[256]; //Le nombre de coups légaux maximaux est environ 218
+    int count;
+}moveList;
 
 /////////////////////////////////////////// VARIABLES GLOBALES //////////////////////////////////////////
 

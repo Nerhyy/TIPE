@@ -22,6 +22,24 @@ chessboard* makeChessboard(){
     return cb;
 }
 
+chessboard* makeChessboard_og(){
+    chessboard* cb = malloc(sizeof(chessboard));
+    cb->whitePawns    = 0b0000000000000000000000000000000000000000000000001111111100000000;
+    cb->whiteRooks    = 0b0000000000000000000000000000000000000000000000000000000010000001;
+    cb->whiteBishops  = 0b0000000000000000000000000000000000000000000000000000000000100100;
+    cb->whiteKnights  = 0b0000000000000000000000000000000000000000000000000000000001000010;
+    cb->whiteQueens   = 0b0000000000000000000000000000000000000000000000000000000000001000;
+    cb->whiteKing     = 0b0000000000000000000000000000000000000000000000000000000000010000;
+
+    cb->blackPawns    = 0b0000000011111111000000000000000000000000000000000000000000000000;
+    cb->blackRooks    = 0b1000000100000000000000000000000000000000000000000000000000000000;
+    cb->blackBishops  = 0b0010010000000000000000000000000000000000000000000000000000000000;
+    cb->blackKnights  = 0b0100001000000000000000000000000000000000000000000000000000000000;
+    cb->blackQueens   = 0b0000100000000000000000000000000000000000000000000000000000000000;
+    cb->blackKing     = 0b0001000000000000000000000000000000000000000000000000000000000000;
+
+    return cb;
+}
 
 //Renvoie un masque des cases occupees
 U64 takenSquares(chessboard* echiquier){
@@ -31,6 +49,25 @@ U64 takenSquares(chessboard* echiquier){
     echiquier->whiteKing |
     echiquier->whiteQueens |
     echiquier->whiteKnights |
+    echiquier->blackPawns |
+    echiquier->blackRooks |
+    echiquier->blackBishops |
+    echiquier->blackKnights |
+    echiquier->blackKing |
+    echiquier->blackQueens;
+}
+
+U64 whitePieces(chessboard* echiquier){
+    return echiquier->whitePawns |
+    echiquier->whiteRooks |
+    echiquier->whiteBishops |
+    echiquier->whiteKing |
+    echiquier->whiteQueens |
+    echiquier->whiteKnights;
+}
+
+U64 blackPieces(chessboard* echiquier){
+    return 
     echiquier->blackPawns |
     echiquier->blackRooks |
     echiquier->blackBishops |
@@ -62,7 +99,7 @@ int popCount (U64 x) {
 int bitScanForward(U64 mask) { //Renvoie l'indice du bit de point faible en LERFM
     U64 lsb;
     if(mask == 0){
-        return -1;
+        return -100;
     }
     mask &= -mask; // isolation du LS1B
     lsb = mask
@@ -75,10 +112,27 @@ int bitScanForward(U64 mask) { //Renvoie l'indice du bit de point faible en LERF
                   + ((lsb & 0xaaaaaaaa) !=0);
 }
 
-U64 serialize(int sq){
+U64 serialize(int sq){ //OK
     U64 square = 1;
     for(int i = 0 ; i < sq ; i++){
         square <<=1;
     }
     return square;
+}
+
+int popLSB(U64* mask){
+
+    if(*mask == 0) return -1; //garde
+
+    U64 lsb = *mask & -(*mask); //Isolation du bit
+    int index = 0;
+
+    //Recherche de l'index du bit isolé
+    while((lsb >> index) != 1ULL){
+        index++;
+    }
+
+    *mask ^= lsb; // enleve le bit du bitboard
+
+    return index;
 }
