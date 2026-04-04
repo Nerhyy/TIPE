@@ -107,20 +107,11 @@ int popCount (U64 x) {
     return __builtin_popcountll(x);
 }
 
-int bitScanForward(U64 mask) { //Renvoie l'indice du bit de point faible en LERFM
-    U64 lsb;
+int bitScanForward(U64 mask) { 
     if(mask == 0){
         return -100;
     }
-    mask &= -mask; // isolation du LS1B
-    lsb = mask
-        | mask>>32;
-    return (((((((((((mask>>32) !=0)  * 2)
-                  + ((lsb & 0xffff0000) !=0)) * 2)
-                  + ((lsb & 0xff00ff00) !=0)) * 2)
-                  + ((lsb & 0xf0f0f0f0) !=0)) * 2)
-                  + ((lsb & 0xcccccccc) !=0)) * 2)
-                  + ((lsb & 0xaaaaaaaa) !=0);
+    return __builtin_ctzll(mask);
 }
 
 U64 serialize(int sq){ //OK
