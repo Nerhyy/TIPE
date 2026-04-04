@@ -27,7 +27,7 @@ moveList* createList(){
 
 void addMove(moveList* list, int from, int to, int piece, int captured, int promo, int flag){
     move m = {from, to, piece, captured, promo, flag};
-    list->moves[list->count + 1] = m;
+    list->moves[list->count] = m;
     list->count++;
 }
 
