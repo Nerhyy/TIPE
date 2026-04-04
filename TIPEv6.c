@@ -949,9 +949,14 @@ move findBestMove_IDS(chessboard* cb, int depth){
         int alpha = -1000000000;
         int beta  =  1000000000;
         move bestMoveForThisDepth = {0,0,0,0,0,0};
-       
+        chessboard local_cb = *cb;
+        ld local_lost;
+        makeMove_ld(&local_cb, l->moves[0], &local_lost);
+        int score = -negaMax(&local_cb , j - 1, -beta, -alpha);
+        unmakeMove(&local_cb, l->moves[0] ,  &local_lost);
+        alpha = score;
         #pragma omp parallel for
-        for(int i = 0 ; i < l->count; i++){
+        for(int i = 1 ; i < l->count; i++){
             chessboard local_cb = *cb;
             ld local_lost;
             makeMove_ld(&local_cb, l->moves[i], &local_lost);
@@ -968,8 +973,8 @@ move findBestMove_IDS(chessboard* cb, int depth){
             }
         }
         bestMove = l->moves[i_max];
-        printf("score %d, depth %d \n", scores[i_max], j);
-        print_move(bestMove);
+        //printf("score %d, depth %d \n", scores[i_max], j);
+        //print_move(bestMove);
     }
     free(scores);
     free_moveList(l);
@@ -991,23 +996,23 @@ int main(int argc, char* argv[]){
     init_zobrist();
     init_tt();
 
-#ifdef _OPENMP
-    printf("OpenMP activé ! Version : %d\n", _OPENMP);
-#else
-    printf("OpenMP NON activé\n");
-#endif
-    int nthreads = 0;
-    #pragma omp parallel
-    {
-        #pragma omp atomic
-        nthreads++;
+// #ifdef _OPENMP
+//     printf("OpenMP activé ! Version : %d\n", _OPENMP);
+// #else
+//     printf("OpenMP NON activé\n");
+// #endif
+//     int nthreads = 0;
+//     #pragma omp parallel
+//     {
+//         #pragma omp atomic
+//         nthreads++;
 
-        printf("Thread %d sur %d\n",
-               omp_get_thread_num(),
-               omp_get_num_threads());
-    }
+//         printf("Thread %d sur %d\n",
+//                omp_get_thread_num(),
+//                omp_get_num_threads());
+//     }
 
-    printf("\nNombre total de threads = %d\n", nthreads);
+//     printf("\nNombre total de threads = %d\n", nthreads);
 
 
     char FEN[92] ;
@@ -1018,7 +1023,7 @@ int main(int argc, char* argv[]){
         fgets(FEN, sizeof(FEN), stdin);
         chessboard *cb = convert_FEN_to_cb(FEN);
         cb->hash = generate_hash(cb);
-        print_move(findBestMove_IDS(cb, 7));
+        print_move(findBestMove_IDS(cb, 5));
         fflush(stdout);
     }
     printf("hit :%d\n" , count);
