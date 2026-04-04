@@ -93,5 +93,7 @@ def main():
                 print(f"info string ERREUR PYTHON: {e}", flush=True)
                 print("bestmove 0000", flush=True)
 
+    proc.kill()
+
 if __name__ == "__main__":
     main()

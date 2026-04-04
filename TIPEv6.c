@@ -935,7 +935,7 @@ void popCountLSBTest(){
 move findBestMove_IDS(chessboard* cb, int depth){
 
     move bestMove = {0,0,0,0,0,0};
-
+    cb->hash = generate_hash(cb);
 
     moveList* l = legalMoveList(cb);
     ld lostdata = {.castle = -1, .enPassantSquare = -1, .fullmove = -1, .halfmoveclock = -1};
@@ -997,8 +997,7 @@ int main(int argc, char* argv[]){
         //printf("From chess engine: Waiting for a fen\n");
         fgets(FEN, sizeof(FEN), stdin);
         chessboard *cb = convert_FEN_to_cb(FEN);
-        cb->hash = generate_hash(cb);
-        print_move(findBestMove_IDS(cb, 7));
+        print_move(findBestMove_IDS(cb, 5));
         fflush(stdout);
     }
     printf("hit :%d\n" , count);
