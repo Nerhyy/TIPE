@@ -818,7 +818,7 @@ int negaMax(chessboard* cb, int depth, int alpha, int beta){
     free_moveList(l);
 
     store_tt(cb->hash, depth, max, originalAlpha, beta);
-    
+
     return max;
 
     
@@ -928,12 +928,12 @@ int main(int argc, char* argv[]){
     init_tt();
 
 
-    char FEN[92];
+    char FEN[92] = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     bool running = true;
     while (running)
     {
         //printf("From chess engine: Waiting for a fen\n");
-        fgets(FEN, sizeof(FEN), stdin);
+        //fgets(FEN, sizeof(FEN), stdin);
         chessboard *cb = convert_FEN_to_cb(FEN);
         cb->hash = generate_hash(cb);
         print_move(findBestMove(cb, 4));

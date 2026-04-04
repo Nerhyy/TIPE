@@ -17,5 +17,5 @@ extern TTEntry TT[TT_SIZE];
 
 void init_tt();
 void clear_tt();
-int probe_tt(U64 hash, int depth, int alpha, int beta, int *return_score);
+bool probe_tt(U64 hash, int depth, int alpha, int beta, int *return_score);
 void store_tt(U64 hash, int depth, int score, int originalAlpha, int beta);

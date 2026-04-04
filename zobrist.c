@@ -35,7 +35,7 @@ U64 generate_hash(chessboard* cb) {
             U64 bitboard = cb->piece[c][p];
             
             while (bitboard) {
-                int sq = popLSB(bitboard);
+                int sq = popLSB(&bitboard);
                 hash ^= zobrist_pieces[c][p][sq];
             }
         }

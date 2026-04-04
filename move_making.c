@@ -541,99 +541,44 @@ void unmakeMove(chessboard* cb, move m, ld* lostdata){ //FINIR DE DEBUG
             cb->piece[!cb->turn][ROOK] |= A8;
 
         }
-
-        cb->halfmoveclock   = lostdata->halfmoveclock;
-        cb->fullmove        = lostdata->fullmove;
-        cb->enPassantSquare = lostdata->enPassantSquare;
-        cb->castle          = lostdata->castle;
-
-        reset_lostdata(lostdata);
-        cb->turn = !cb->turn; //On change le tour
-
     }
-    else if(m.captured != 0){ // Coups avec capture
-
-        if(m.promo != 0){ //En cas de promotion
-            cb->piece[!cb->turn][m.promo] &= ~to;  //On retire la piece promut
-            cb->piece[!cb->turn][m.piece] |= from; //On pose la nouvelle piece sur la case ou elle fut avant
-            cb->piece[cb->turn][m.captured] |= to; //On remet l'ancienne piece
-
-            cb->halfmoveclock   = lostdata->halfmoveclock;
-            cb->fullmove        = lostdata->fullmove;
-            cb->enPassantSquare = lostdata->enPassantSquare;
-            cb->castle          = lostdata->castle;
-
+    else if(m.captured != 0){ 
+        if(m.promo != 0){ 
+            cb->piece[!cb->turn][m.promo] &= ~to;  
+            cb->piece[!cb->turn][m.piece] |= from; 
+            cb->piece[cb->turn][m.captured] |= to; 
         }
-        
         else if(m.flag == ENPASSANT){
-
-            cb->piece[!cb->turn][m.piece] &= ~to; // On retire la piece
-            cb->piece[!cb->turn][m.piece] |= from;   //On pose la nouvelle piece sur la nouvelle case
-    
-
-            
-            if (!cb->turn == WHITE) { 
-                cb->piece[cb->turn][m.captured] |= to >> 8; //On remet l'ancienne piece
-            } 
-                // Si les Noirs ont joué (coup blanc annulé, !cb->turn == BLACK)
-            else { 
-                cb->piece[cb->turn][m.captured] |= to << 8; //On remet l'ancienne piece
-            }
-
-            cb->halfmoveclock   = lostdata->halfmoveclock;
-            cb->fullmove        = lostdata->fullmove;
-            cb->enPassantSquare = lostdata->enPassantSquare;
-            cb->castle          = lostdata->castle;
-
+            cb->piece[!cb->turn][m.piece] &= ~to; 
+            cb->piece[!cb->turn][m.piece] |= from;   
+            if (!cb->turn == WHITE) cb->piece[cb->turn][m.captured] |= to >> 8; 
+            else                    cb->piece[cb->turn][m.captured] |= to << 8; 
         }
-             
         else{
-            cb->piece[!cb->turn][m.piece] &= ~to; // On retire la piece
-            cb->piece[!cb->turn][m.piece] |= from;   //On pose la nouvelle piece sur la nouvelle case
-            cb->piece[cb->turn][m.captured] |= to; //On remet l'ancienne piece
-
-
-            cb->halfmoveclock   = lostdata->halfmoveclock;
-            cb->fullmove        = lostdata->fullmove;
-            cb->enPassantSquare = lostdata->enPassantSquare;
-            cb->castle          = lostdata->castle;
+            cb->piece[!cb->turn][m.piece] &= ~to; 
+            cb->piece[!cb->turn][m.piece] |= from;   
+            cb->piece[cb->turn][m.captured] |= to; 
         }
-
-
-
-        reset_lostdata(lostdata);
-        cb->turn = !cb->turn; //On change le tour
-
-
-
     }
-    else{ //Coup normaux
-
-        if(m.promo != 0){ //En cas de promotion
-        cb->piece[!cb->turn][m.promo] &= ~to;
-        cb->piece[!cb->turn][m.piece] |= from;   //On pose la nouvelle piece sur la nouvelle case
-
-        cb->halfmoveclock   = lostdata->halfmoveclock;
-        cb->fullmove        = lostdata->fullmove;
-        cb->enPassantSquare = lostdata->enPassantSquare;
-        cb->castle          = lostdata->castle;
-
+    else{ // Coups normaux
+        if(m.promo != 0){ 
+            cb->piece[!cb->turn][m.promo] &= ~to;
+            cb->piece[!cb->turn][m.piece] |= from;   
         }
-
-        
-        cb->piece[!cb->turn][m.piece] &= ~to; // On retire la piece
-        cb->piece[!cb->turn][m.piece] |= from;   //On pose la nouvelle piece sur la nouvelle case
-
-        cb->halfmoveclock   = lostdata->halfmoveclock;
-        cb->fullmove        = lostdata->fullmove;
-        cb->enPassantSquare = lostdata->enPassantSquare;
-        cb->castle          = lostdata->castle;
-        cb->hash = lostdata->hash;
-
-
-        reset_lostdata(lostdata);
-        cb->turn = !cb->turn; //On change le tour
+        else { 
+            cb->piece[!cb->turn][m.piece] &= ~to; 
+            cb->piece[!cb->turn][m.piece] |= from;   
+        }
     }
+
+
+    cb->halfmoveclock   = lostdata->halfmoveclock;
+    cb->fullmove        = lostdata->fullmove;
+    cb->enPassantSquare = lostdata->enPassantSquare;
+    cb->castle          = lostdata->castle;
+    cb->hash            = lostdata->hash; 
+
+    cb->turn = !cb->turn; 
 }
 
 //true  -> legal move
