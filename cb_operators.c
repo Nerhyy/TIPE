@@ -104,11 +104,7 @@ U64 kf = 0x0101010101010101; /*  -1/255 */
 
 //Compte la population d'un masque (COMPLEXITE PAS TOP)
 int popCount (U64 x) {
-    x =  x       - ((x >> 1)  & k1); /* put count of each 2 bits into those 2 bits */
-    x = (x & k2) + ((x >> 2)  & k2); /* put count of each 4 bits into those 4 bits */
-    x = (x       +  (x >> 4)) & k4 ; /* put count of each 8 bits into those 8 bits */
-    x = (x * kf) >> 56; /* retourne les 8 bits de point fort  de x + (x<<8) + (x<<16) + (x<<24) + ...  */
-    return (int) x;
+    return __builtin_popcountll(x);
 }
 
 int bitScanForward(U64 mask) { //Renvoie l'indice du bit de point faible en LERFM
@@ -232,14 +228,5 @@ int deserialize(U64 sq){ //Deserialize un mask unitaire
         printf("MASQUE VIDE --------------------------------------------------------------------------------------\n");
         return -1; //Que je trouve le probleme
     }
-    int i = 0;
-    while(i < 64){
-        sq >>= 1;
-        i++;
-        if(sq == 0){
-            return (i-1);
-        }
-    }
-    printf("ERROR DESERIALIZATION --------------------------------------------------------------------------------------\n");
-    return -1;
+    return __builtin_ctzll(sq);
 }

@@ -970,7 +970,6 @@ move findBestMove_IDS(chessboard* cb, int depth){
         bestMove = bestMoveForThisDepth;
         //printf("score %d: \n", bestScore);
     }
-    clear_tt();
     free_moveList(l);
     return bestMove;
         
