@@ -733,7 +733,7 @@ int other_eval(U64 piece[2][7]){
 }
 
 int quiescence(chessboard* cb, int alpha, int beta){
-    int stand_pat= eval(cb);
+    int stand_pat = eval(cb);
     if(stand_pat >= beta){
         return beta;
     }
@@ -741,33 +741,40 @@ int quiescence(chessboard* cb, int alpha, int beta){
         alpha = stand_pat;
     }
 
-    moveList* l = legalCaptureMoveList(cb);
+    moveList l;
+    l.count = 0;
+    generateMoves(cb, &l);
+
     ld lostdata = create_lostdata2();
 
-    for (int i = 0; i < l->count; i++) {
-        makeMove_ld(cb, l->moves[i], &lostdata);
+    for (int i = 0; i < l.count; i++) {
+
+        if (l.moves[i].captured == 0) {
+            continue; 
+        }
+
+        makeMove_ld(cb, l.moves[i], &lostdata);
+
+        if (!legalmove_check(cb, l.moves[i])) {
+            unmakeMove(cb, l.moves[i], &lostdata);
+            continue; // Coup pseudo-légal mais qui met/laisse le roi en échec
+        }
+
         int score = -quiescence(cb, -beta, -alpha);
-        unmakeMove(cb, l->moves[i], &lostdata);
+        
+        unmakeMove(cb, l.moves[i], &lostdata);
 
         if (score >= beta) {
-            free_moveList(l);
             return beta;
         }
-        if (score >= alpha) {
+        if (score > alpha) {
             alpha = score;
         }
     }
-
-    free_moveList(l);
     return alpha;
-
-
-
-
-
 }
 
-int count = 0;
+//int count = 0;
 
 int negaMax(chessboard* cb, int depth, int alpha, int beta){
 
@@ -776,7 +783,7 @@ int negaMax(chessboard* cb, int depth, int alpha, int beta){
     int tt_score;
     move tt_best_move = {0};
     if (probe_tt(cb->hash, depth, alpha, beta, &tt_score, &tt_best_move)) {
-        count++;
+        //count++;
         return tt_score;
     }
     
@@ -986,7 +993,7 @@ move findBestMove_IDS(chessboard* cb, int depth){
     }
     free_moveList(l);
     return bestMove;
-        
+
 }
 
 
@@ -1015,7 +1022,7 @@ int main(int argc, char* argv[]){
         fflush(stdout);
         running = false;
     }
-    printf("hit :%d\n" , count);
+    //printf("hit :%d\n" , count);
     return 0;
 }
 
