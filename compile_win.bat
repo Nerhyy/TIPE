@@ -1,1 +1,1 @@
-gcc *.c -O3 -o TIPEv6.exe && copy TIPEv6.exe lichess\engines\
+gcc *.c -O3 -fopenmp -o TIPEv6.exe && copy TIPEv6.exe lichess\engines\

@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <omp.h>
 
 #include "pawns.h"
 #include "knights.h"
@@ -941,35 +942,36 @@ move findBestMove_IDS(chessboard* cb, int depth){
     ld lostdata = {.castle = -1, .enPassantSquare = -1, .fullmove = -1, .halfmoveclock = -1};
 
     //Recherche en profondeur du meilleur coup
+    int* scores = malloc(sizeof(int) * l->count);
     for(int j = 1; j <= depth; j++){
         
         int bestScore = -1000000000;
         int alpha = -1000000000;
         int beta  =  1000000000;
         move bestMoveForThisDepth = {0,0,0,0,0,0};
-
+       
+        #pragma omp parallel for
         for(int i = 0 ; i < l->count; i++){
-
-            makeMove_ld(cb, l->moves[i] , &lostdata);
-            //Calcul en profondeur
-            int score = -negaMax(cb , j - 1, -beta, -alpha);
-
-            unmakeMove(cb, l->moves[i] , &lostdata);
-            
-            //Attribution du meilleur score
-            if(score > bestScore){
-                bestScore = score;
-                bestMoveForThisDepth = l->moves[i];
-            }
-
-            if( score > alpha){
-                alpha = score;
-            }
-
+            chessboard local_cb = *cb;
+            ld local_lost;
+            makeMove_ld(&local_cb, l->moves[i], &local_lost);
+            int score = -negaMax(&local_cb , j - 1, -beta, -alpha);
+            unmakeMove(&local_cb, l->moves[i] ,  &local_lost);
+            scores[i] = score;
         }
-        bestMove = bestMoveForThisDepth;
-        //printf("score %d: \n", bestScore);
+        int i_max = 0;
+        for (int i = 0; i < l->count; i++)
+        {
+            if(scores[i] > scores[i_max])
+            {
+                i_max = i;
+            }
+        }
+        bestMove = l->moves[i_max];
+        printf("score %d, depth %d \n", scores[i_max], j);
+        print_move(bestMove);
     }
+    free(scores);
     free_moveList(l);
     return bestMove;
         
@@ -988,6 +990,24 @@ int main(int argc, char* argv[]){
     fill_arrFrontSpans();
     init_zobrist();
     init_tt();
+
+#ifdef _OPENMP
+    printf("OpenMP activé ! Version : %d\n", _OPENMP);
+#else
+    printf("OpenMP NON activé\n");
+#endif
+    int nthreads = 0;
+    #pragma omp parallel
+    {
+        #pragma omp atomic
+        nthreads++;
+
+        printf("Thread %d sur %d\n",
+               omp_get_thread_num(),
+               omp_get_num_threads());
+    }
+
+    printf("\nNombre total de threads = %d\n", nthreads);
 
 
     char FEN[92] ;
