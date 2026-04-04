@@ -16,6 +16,7 @@
 #include "king.h"
 #include "rectlookup.h"
 #include "move_gen.h"
+#include "zobrist.h"
 
 
 int abs(int a){
@@ -276,14 +277,21 @@ void makeMove_castle_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
     if(cb->turn == WHITE){
         cb->piece[cb->turn][KING] &= ~from;   // On retire la piece
         cb->piece[cb->turn][KING] |= to;     //On pose la nouvelle piece sur la nouvelle case
+        cb->hash ^= zobrist_pieces[WHITE][KING][m.from];
+        cb->hash ^= zobrist_pieces[WHITE][KING][m.to];
 
         if(m.to == c1){
             cb->piece[cb->turn][ROOK] &= ~0x0000000000000001;
             cb->piece[cb->turn][ROOK] |= 0x0000000000000008;
+
+            cb->hash ^= zobrist_pieces[WHITE][ROOK][a1];
+            cb->hash ^= zobrist_pieces[WHITE][ROOK][d1];
         }
         if(m.to == g1){
             cb->piece[cb->turn][ROOK] &= ~0x0000000000000080;
             cb->piece[cb->turn][ROOK] |= 0x0000000000000020;
+            cb->hash ^= zobrist_pieces[WHITE][ROOK][h1];
+            cb->hash ^= zobrist_pieces[WHITE][ROOK][f1];
         }
 
         if(!cb->turn){ //la clock des coups
@@ -306,14 +314,22 @@ void makeMove_castle_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
     else if (cb->turn == BLACK){
         cb->piece[cb->turn][KING] &= ~from;   // On retire la piece
         cb->piece[cb->turn][KING] |= to;     //On pose la nouvelle piece sur la nouvelle case
+        cb->hash ^= zobrist_pieces[BLACK][KING][m.from];
+        cb->hash ^= zobrist_pieces[BLACK][KING][m.to];
 
         if(m.to == c8){
             cb->piece[cb->turn][ROOK] &= ~0x0100000000000000;
             cb->piece[cb->turn][ROOK] |= 0x0800000000000000;
+
+            cb->hash ^= zobrist_pieces[BLACK][ROOK][a8];
+            cb->hash ^= zobrist_pieces[BLACK][ROOK][d8];
         }
         if(m.to == g8){
             cb->piece[cb->turn][ROOK] &= ~0x8000000000000000;
             cb->piece[cb->turn][ROOK] |= 0x2000000000000000;
+
+            cb->hash ^= zobrist_pieces[BLACK][ROOK][h8];
+            cb->hash ^= zobrist_pieces[BLACK][ROOK][f8];
         }
 
         if(!cb->turn){ //la clock des coups
@@ -338,6 +354,9 @@ void makeMove_capture_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
     cb->piece[cb->turn][m.piece] &= ~from;   // On retire la piece
     cb->piece[cb->turn][m.piece] |= to;     //On pose la nouvelle piece sur la nouvelle case
 
+    cb->hash ^= zobrist_pieces[cb->turn][m.piece][m.from];
+    cb->hash ^= zobrist_pieces[cb->turn][m.piece][m.to];
+
     int other_turn = 1 - cb->turn;
     // En cas de capture EN PASSANT________________________________________________________________________________
     if(m.flag == ENPASSANT){
@@ -346,9 +365,12 @@ void makeMove_capture_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
         
         if(cb->turn == WHITE){
             cb->piece[other_turn][m.captured] &= ~(to >> 8); //On enleve la piece capturée                              A VERIFIER
+
+            cb->hash ^= zobrist_pieces[other_turn][PAWN][m.to - 8];
         }
         if(cb->turn == BLACK){
             cb->piece[other_turn][m.captured] &= ~(to << 8); //On enleve la piece capturée                              A VERIFIER
+            cb->hash ^= zobrist_pieces[other_turn][PAWN][m.to + 8];
         }
         lostdata->enPassantSquare = cb->enPassantSquare;
         cb->enPassantSquare = -1;
@@ -356,6 +378,8 @@ void makeMove_capture_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
     }
     else{
         cb->piece[other_turn][m.captured] &= ~to; //On enleve la piece capturée
+
+        cb->hash ^= zobrist_pieces[other_turn][m.captured][m.to];
     }
 
     if(other_turn == WHITE){ //la clock des coups
@@ -373,6 +397,9 @@ void makeMove_capture_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
     //Promotions______________________________________________________________________________________________
     if(m.promo != 0){
         promotion(cb, m, to);
+
+        cb->hash ^= zobrist_pieces[cb->turn][PAWN][m.to];
+        cb->hash ^= zobrist_pieces[cb->turn][m.promo][m.to];
     }
 
     lostdata->enPassantSquare = cb->enPassantSquare;
@@ -384,6 +411,9 @@ void makeMove_default_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
 
     cb->piece[cb->turn][m.piece] &= ~from; // On retire la piece
     cb->piece[cb->turn][m.piece] |= to;   //On pose la nouvelle piece sur la nouvelle case
+
+    cb->hash ^= zobrist_pieces[cb->turn][m.piece][m.from];
+    cb->hash ^= zobrist_pieces[cb->turn][m.piece][m.to];
 
     if(!cb->turn){ //la clock des coups
         lostdata->fullmove = cb->fullmove;
@@ -421,10 +451,21 @@ void makeMove_default_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
     //Promotions_______________________________________________________________________________________________
     if(m.promo != 0){
         promotion(cb, m, to);
+
+        cb->hash ^= zobrist_pieces[cb->turn][PAWN][m.to];
+        cb->hash ^= zobrist_pieces[cb->turn][m.promo][m.to];
     }
 }
 //modifié
 void makeMove_ld(chessboard* cb, move m, ld* lostdata){ //                     A TESTER
+
+    lostdata->hash = cb->hash;
+
+    cb->hash ^= zobrist_castling[cb->castle];
+    if(cb->enPassantSquare != -1){
+        cb->hash ^= zobrist_en_passant[cb->enPassantSquare % 8];
+    }
+
     U64 to = serialize(m.to);
     U64 from = serialize(m.from);
 
@@ -438,7 +479,22 @@ void makeMove_ld(chessboard* cb, move m, ld* lostdata){ //                     A
     else{ //Coups normaux______________________________________________________________________
         makeMove_default_ld(cb, m, lostdata, from, to);
     }
+
+    cb->hash ^= zobrist_castling[cb->castle];
+    if(cb->enPassantSquare != -1){
+        cb->hash ^= zobrist_en_passant[cb->enPassantSquare % 8];
+    }
+
     cb->turn = 1 - cb->turn; //On change le tour
+
+    cb->hash ^= zobrist_black_to_move;
+
+    // --- LE TEST ULTIME (À ENLEVER QUAND TOUT MARCHE) ---
+    U64 verif_hash = generate_hash(cb);
+    if (cb->hash != verif_hash) {
+        printf("ALERTE BUG ZOBRIST ! Coup joué : de %d à %d\n", m.from, m.to);
+        assert(cb->hash == verif_hash); // Fait crasher le programme volontairement
+    }
 }
 
 

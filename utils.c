@@ -530,6 +530,7 @@ chessboard* convert_FEN_to_cb(char FEN[92]){
     //printf("test : %d %d\n", cb->halfmoveclock, cb->fullmove);
 
     
+    
     return cb;
 }
 

@@ -37,6 +37,8 @@
 #include "move_gen.h"
 #include "move_making.h"
 #include "perft.h"
+#include "tt.h"
+#include "zobrist.h"
 
 
 int piece_eval(U64 piece[2][7]);
@@ -766,59 +768,60 @@ int quiescence(chessboard* cb, int alpha, int beta){
 }
 
 int negaMax(chessboard* cb, int depth, int alpha, int beta){
-    if(depth == 0){
-        int evalu = quiescence(cb, alpha, beta);
-        // int evalu = quiescence(cb, alpha, beta);
-        /*if(evalu > 100){
-            printf("-------------------------------------\n");
-            printf("eval : %f\n", evalu);
-            print_chessboard_white(cb);
-            printf("-------------------------------------\n");
-        }*/
-        return evalu;
+
+    int originalAlpha = alpha;
+
+    int tt_score;
+    if (probe_tt(cb->hash, depth, alpha, beta, &tt_score)) {
+        return tt_score;
     }
-    else{
+    
+    if(depth == 0){
+        return quiescence(cb, alpha, beta);
+    }
+    
 
-        int max = -100000000; //On met une évaluation très élevée
-        moveList *l = legalMoveList(cb);
+    int max = -100000000; //On met une évaluation très élevée
+    moveList *l = legalMoveList(cb);
 
-        if(l->count == 0){
-            return -10000;
-        }
+    if(l->count == 0){
+        return -10000;
+    }
 
-        ld lostdata = create_lostdata2();
+    ld lostdata = create_lostdata2();
 
-        //Recherche en profondeur du meilleur coup
-        for(int i = 0 ; i < l->count; i++){
+    //Recherche en profondeur du meilleur coup
+    for(int i = 0 ; i < l->count; i++){
             
 
-            makeMove_ld(cb, l->moves[i] , &lostdata);
-            //Calcul en profondeur
-            int score = -negaMax(cb , depth - 1, -beta, -alpha); //On inverse beta et alpha dans un negamax
-            unmakeMove(cb, l->moves[i] , &lostdata);
+        makeMove_ld(cb, l->moves[i] , &lostdata);
+        //Calcul en profondeur
+        int score = -negaMax(cb , depth - 1, -beta, -alpha); //On inverse beta et alpha dans un negamax
+        unmakeMove(cb, l->moves[i] , &lostdata);
 
-            //Attribution du meilleur score
-            if(score > max){
-                max = score;
-            }
-
-            //Mise à jour du alpha
-            if(score > alpha){
-                alpha = score;
-            }
-
-            //Elagage
-            if(alpha >= beta){
-                break;
-            }
+        //Attribution du meilleur score
+        if(score > max){
+            max = score;
         }
 
-        free_moveList(l);
-        
+        //Mise à jour du alpha
+        if(score > alpha){
+            alpha = score;
+        }
 
-        return max;
-
+        //Elagage
+        if(alpha >= beta){
+            break;
+        }
     }
+
+    free_moveList(l);
+
+    store_tt(cb->hash, depth, max, originalAlpha, beta);
+    
+    return max;
+
+    
 }
 
 
@@ -921,6 +924,9 @@ int main(int argc, char* argv[]){
     fill_knightAttacks_table();
     fill_pawnAttacks_table();
     fill_arrFrontSpans();
+    init_zobrist();
+    init_tt();
+
 
     char FEN[92];
     bool running = true;
@@ -929,6 +935,7 @@ int main(int argc, char* argv[]){
         //printf("From chess engine: Waiting for a fen\n");
         fgets(FEN, sizeof(FEN), stdin);
         chessboard *cb = convert_FEN_to_cb(FEN);
+        cb->hash = generate_hash(cb);
         print_move(findBestMove(cb, 4));
         fflush(stdout);
     }

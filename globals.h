@@ -22,7 +22,8 @@ typedef struct echiquier{
     int enPassantSquare;
     int halfmoveclock;
     int fullmove;
-
+    
+    U64 hash;
 
 }chessboard;
 
@@ -156,6 +157,8 @@ typedef struct{
     int enPassantSquare;
     int halfmoveclock;
     int fullmove;
+
+    U64 hash;
 }ld; //Pour le unmake move
 
 /////////////////////////////////////////// VARIABLES GLOBALES //////////////////////////////////////////
