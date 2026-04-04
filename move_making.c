@@ -628,6 +628,7 @@ void unmakeMove(chessboard* cb, move m, ld* lostdata){ //FINIR DE DEBUG
         cb->fullmove        = lostdata->fullmove;
         cb->enPassantSquare = lostdata->enPassantSquare;
         cb->castle          = lostdata->castle;
+        cb->hash = lostdata->hash;
 
 
         reset_lostdata(lostdata);
