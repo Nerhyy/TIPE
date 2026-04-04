@@ -1027,7 +1027,7 @@ int main(int argc, char* argv[]){
         fflush(stdout);
     }
     printf("hit :%d\n" , count);
-    return 0;
+    return 0;  //yo
 }
 
 //./compile && ./TIPEv6.exe
