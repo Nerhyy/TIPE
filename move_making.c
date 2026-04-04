@@ -607,63 +607,50 @@ void free_moveList(moveList* l){
 }
 
 moveList* legalMoveList (chessboard* cb){
-
     moveList l;
     l.count = 0;
     generateMoves(cb , &l);
 
-    int i = 1;
     ld lostdata = {.castle = -1, .enPassantSquare = -1, .fullmove = -1, .halfmoveclock = -1};
     moveList* ll = createList();
 
-    int cpt = 0;
-
-    while((l.moves[i].from !=  l.moves[i].to) && (i < l.count + 1)){
+    // Itération standard de 0 à l.count
+    for (int i = 0; i < l.count; i++) {
         makeMove_ld(cb, l.moves[i], &lostdata);
         if(!legalmove_check(cb, l.moves[i])){
             unmakeMove(cb, l.moves[i], &lostdata);
         }
         else{
-            ll->moves[cpt] = l.moves[i];
+            ll->moves[ll->count] = l.moves[i];
             ll->count++;
-            cpt++;
             unmakeMove(cb, l.moves[i], &lostdata);
         }
-        i++;
     }
     return ll;
 }
 
 moveList* legalCaptureMoveList (chessboard* cb){
-
     moveList l;
     l.count = 0;
     generateMoves(cb , &l);
 
-    int i = 1;
     ld lostdata = {.castle = -1, .enPassantSquare = -1, .fullmove = -1, .halfmoveclock = -1};
     moveList* ll = createList();
-    int cpt = 0;
-    //print_lostdata(lostdata);
 
-    //print_move(l->moves[1]);
-    while((l.moves[i].from !=  l.moves[i].to) && (i < l.count + 1)){
+    // Itération standard de 0 à l.count
+    for (int i = 0; i < l.count; i++) {
         if(l.moves[i].captured != 0){
             makeMove_ld(cb, l.moves[i], &lostdata);
 
             if(!legalmove_check(cb, l.moves[i])){
                 unmakeMove(cb, l.moves[i], &lostdata);
-
             }
             else{
-                ll->moves[cpt] = l.moves[i];
+                ll->moves[ll->count] = l.moves[i];
                 ll->count++;
-                cpt++;
                 unmakeMove(cb, l.moves[i], &lostdata);
-
             }
         }
-        i++;
     }
     return ll;
 }
