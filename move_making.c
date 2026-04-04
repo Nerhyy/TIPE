@@ -468,11 +468,11 @@ void makeMove_ld(chessboard* cb, move m, ld* lostdata){ //                     A
     cb->hash ^= zobrist_black_to_move;
 
     // --- LE TEST ULTIME (À ENLEVER QUAND TOUT MARCHE) ---
-    U64 verif_hash = generate_hash(cb);
+    /*U64 verif_hash = generate_hash(cb);
     if (cb->hash != verif_hash) {
         printf("ALERTE BUG ZOBRIST ! Coup joué : de %d à %d\n", m.from, m.to);
         assert(cb->hash == verif_hash); // Fait crasher le programme volontairement
-    }
+    }*/
 }
 
 

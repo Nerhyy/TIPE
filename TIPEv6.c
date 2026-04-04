@@ -968,9 +968,9 @@ move findBestMove_IDS(chessboard* cb, int depth){
 
         }
         bestMove = bestMoveForThisDepth;
-        printf("score %d: \n", bestScore);
+        //printf("score %d: \n", bestScore);
     }
-    
+    clear_tt();
     free_moveList(l);
     return bestMove;
         
@@ -991,17 +991,16 @@ int main(int argc, char* argv[]){
     init_tt();
 
 
-    char FEN[92] = "r1bqkb1r/pppppppp/4n3/8/2B1Q3/7P/PPPP1PP1/RNB1K2R b KQkq - 7 9";
+    char FEN[92] ;
     bool running = true;
     while (running)
     {
         //printf("From chess engine: Waiting for a fen\n");
-        //fgets(FEN, sizeof(FEN), stdin);
+        fgets(FEN, sizeof(FEN), stdin);
         chessboard *cb = convert_FEN_to_cb(FEN);
         cb->hash = generate_hash(cb);
         print_move(findBestMove_IDS(cb, 7));
         fflush(stdout);
-        running= false;
     }
     printf("hit :%d\n" , count);
     return 0;
