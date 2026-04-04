@@ -11,11 +11,12 @@ typedef struct {
     int depth;            // La profondeur à laquelle on l'a calculée
     int score;            // L'évaluation
     int flag;             // EXACT, LOWER_BOUND ou UPPER_BOUND
+    move best_move;
 } TTEntry;
 
 extern TTEntry TT[TT_SIZE];
 
 void init_tt();
 void clear_tt();
-bool probe_tt(U64 hash, int depth, int alpha, int beta, int *return_score);
-void store_tt(U64 hash, int depth, int score, int originalAlpha, int beta);
+bool probe_tt(U64 hash, int depth, int alpha, int beta, int *return_score, move* return_best_move);
+void store_tt(U64 hash, int depth, int score, int originalAlpha, int beta, move best_move);
