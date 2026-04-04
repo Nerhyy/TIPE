@@ -767,12 +767,15 @@ int quiescence(chessboard* cb, int alpha, int beta){
 
 }
 
+int count = 0;
+
 int negaMax(chessboard* cb, int depth, int alpha, int beta){
 
     int originalAlpha = alpha;
 
     int tt_score;
     if (probe_tt(cb->hash, depth, alpha, beta, &tt_score)) {
+        count++;
         return tt_score;
     }
     
@@ -928,7 +931,7 @@ int main(int argc, char* argv[]){
     init_tt();
 
 
-    char FEN[92] = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    char FEN[92] = "r1bqkb1r/pppppppp/4n3/8/2B1Q3/7P/PPPP1PP1/RNB1K2R b KQkq - 7 9";
     bool running = true;
     while (running)
     {
@@ -936,10 +939,11 @@ int main(int argc, char* argv[]){
         //fgets(FEN, sizeof(FEN), stdin);
         chessboard *cb = convert_FEN_to_cb(FEN);
         cb->hash = generate_hash(cb);
-        print_move(findBestMove(cb, 4));
+        print_move(findBestMove(cb, 7));
         fflush(stdout);
+        running= false;
     }
-
+    printf("hit :%d\n" , count);
     return 0;
 }
 

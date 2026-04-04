@@ -28,53 +28,32 @@ int abs(int a){
     }
 }
 
-void castling_rights(chessboard* cb, move m, U64 from){
-    //Detection de perte de droit de roquer___________________________________________________________________
-        if(m.piece == KING){
-            if(cb->turn == WHITE){
-                cb->castle &= 0b0011; //On retire les droits de roque aux blancs
-            }
-            else{
-                cb->castle &= 0b1100; //On retire les droits de roque aux noirs
-            }
+void castling_rights(chessboard* cb, move m, U64 from_bitboard_unused){
+    
+    if(m.piece == KING){
+        if(cb->turn == WHITE) cb->castle &= 0b0011; // Retire les droits (8 et 4) aux blancs
+        else                  cb->castle &= 0b1100; // Retire les droits (2 et 1) aux noirs
+    }
+    if(m.piece == ROOK){
+        if(cb->turn == WHITE){
+            if(m.from == 0) cb->castle &= 0b1011; // Tour A1 bouge -> perd Q (4)
+            if(m.from == 7) cb->castle &= 0b0111; // Tour H1 bouge -> perd K (8)
         }
-        if(m.piece == ROOK){
-            if(cb->turn == WHITE){
-                if(from == 0){
-                    cb->castle &= 0b0111; //On retire les droits de roque à gauche aux blancs
-                }
-                if(from == 7){
-                    cb->castle &= 0b1011; //On retire les droits de roque à droite aux blancs
-                }
-            }
-            else{
-                if(from == 65){
-                    cb->castle &= 0b0010; //On retire les droits de roque à gauche aux noirs
-                } 
-                if(from == 63){
-                    cb->castle &= 0b0001; //On retire les droits de roque à droite aux noirs
-                }
-            }
+        else{
+            if(m.from == 56) cb->castle &= 0b1110; // Tour A8 bouge -> perd q (1)
+            if(m.from == 63) cb->castle &= 0b1101; // Tour H8 bouge -> perd k (2)
         }
-        if(m.captured == ROOK){
-            if(cb->turn == WHITE){
-                if(m.to == 63){
-                    cb->castle &= 0b1110;
-                }
-                if(m.to == 56){
-                    cb->castle &= 0b1101;
-                }
-            }
-            if(cb->turn == BLACK){
-                if(m.to == 0){
-                    cb->castle &= 0b0111;
-                }
-                if(m.to == 7){
-                    cb->castle &= 0b1011;
-                }
-            }
-            
+    }
+    if(m.captured == ROOK){
+        if(cb->turn == WHITE){
+            if(m.to == 56) cb->castle &= 0b1110; // Capture sur A8 -> Noir perd q (1)
+            if(m.to == 63) cb->castle &= 0b1101; // Capture sur H8 -> Noir perd k (2)
         }
+        if(cb->turn == BLACK){
+            if(m.to == 0) cb->castle &= 0b1011; // Capture sur A1 -> Blanc perd Q (4)
+            if(m.to == 7) cb->castle &= 0b0111; // Capture sur H1 -> Blanc perd K (8)
+        }
+    }
 }
 
 //Le pions est déjà bougé, on le transforme en la piece voulue
@@ -351,6 +330,10 @@ void makeMove_castle_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
 //modifié
 void makeMove_capture_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
 {
+
+    lostdata->enPassantSquare = cb->enPassantSquare;
+    cb->enPassantSquare = -1;
+
     cb->piece[cb->turn][m.piece] &= ~from;   // On retire la piece
     cb->piece[cb->turn][m.piece] |= to;     //On pose la nouvelle piece sur la nouvelle case
 
@@ -372,8 +355,6 @@ void makeMove_capture_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
             cb->piece[other_turn][m.captured] &= ~(to << 8); //On enleve la piece capturée                              A VERIFIER
             cb->hash ^= zobrist_pieces[other_turn][PAWN][m.to + 8];
         }
-        lostdata->enPassantSquare = cb->enPassantSquare;
-        cb->enPassantSquare = -1;
         
     }
     else{
@@ -401,9 +382,6 @@ void makeMove_capture_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
         cb->hash ^= zobrist_pieces[cb->turn][PAWN][m.to];
         cb->hash ^= zobrist_pieces[cb->turn][m.promo][m.to];
     }
-
-    lostdata->enPassantSquare = cb->enPassantSquare;
-    cb->enPassantSquare = -1;
 }
 //modifié
 void makeMove_default_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
@@ -431,11 +409,11 @@ void makeMove_default_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
         if(abs(m.to - m.from) == 16){
 
             if(cb->turn == WHITE){
-                lostdata->enPassantSquare = cb->enPassantSquare;
+                //lostdata->enPassantSquare = cb->enPassantSquare;
                 cb->enPassantSquare = (m.from + 8); //ajoute du enPassantSquare
             }
             else if (cb->turn == BLACK){
-                lostdata->enPassantSquare = cb->enPassantSquare;
+                //lostdata->enPassantSquare = cb->enPassantSquare;
                 cb->enPassantSquare = (m.from - 8); //ajoute du enPassantSquare
             }
             else{
