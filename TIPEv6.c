@@ -982,7 +982,6 @@ move findBestMove_IDS(chessboard* cb, int depth){
         
 }
 
-
 //////////////////////////////////////////////////// MAIN /////////////////////////////////////////////////////
 
 int main(int argc, char* argv[]){
@@ -1027,7 +1026,7 @@ int main(int argc, char* argv[]){
         fflush(stdout);
     }
     printf("hit :%d\n" , count);
-    return 0;  //yo
+    return 0;
 }
 
 //./compile && ./TIPEv6.exe
