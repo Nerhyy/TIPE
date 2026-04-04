@@ -1,0 +1,7 @@
+/.vscode
+/lichess_bot_auto_logs
+/lichess-bot-master
+*.exe
+/lichess
+/build
+/dist

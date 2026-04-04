@@ -1,0 +1,1 @@
+gcc *.c -O3 -o TIPEv6.exe && cp TIPEv6.exe lichess/engines/

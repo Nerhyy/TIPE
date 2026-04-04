@@ -1,0 +1,1 @@
+pyinstaller --onefile wrap.py && copy dist\wrap.exe lichess\engines
