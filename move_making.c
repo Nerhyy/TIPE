@@ -254,16 +254,21 @@ void reset_lostdata(ld* lostdata){
 void makeMove_castle_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
 {
     int turn = cb->turn;
+    
+    lostdata->castle = cb->castle;
+    lostdata->enPassantSquare = cb->enPassantSquare;
+    lostdata->halfmoveclock = cb->halfmoveclock;
+    lostdata->fullmove = cb->fullmove;
+
     cb->piece[turn][KING] &= ~from;   // On retire la piece
     cb->piece[turn][KING] |= to;     //On pose la nouvelle piece sur la nouvelle case
     cb->hash ^= zobrist_pieces[turn][KING][m.from];
     cb->hash ^= zobrist_pieces[turn][KING][m.to];
-    if(turn == WHITE){
 
+    if(turn == WHITE){
         if(m.to == c1){
             cb->piece[turn][ROOK] &= ~0x0000000000000001;
             cb->piece[turn][ROOK] |= 0x0000000000000008;
-
             cb->hash ^= zobrist_pieces[WHITE][ROOK][a1];
             cb->hash ^= zobrist_pieces[WHITE][ROOK][d1];
         }
@@ -273,43 +278,28 @@ void makeMove_castle_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
             cb->hash ^= zobrist_pieces[WHITE][ROOK][h1];
             cb->hash ^= zobrist_pieces[WHITE][ROOK][f1];
         }
-
-
         cb->castle &= 0b0011; //On retire les droits de roque
-
     }
     else if (turn == BLACK){
-
-
         if(m.to == c8){
             cb->piece[turn][ROOK] &= ~0x0100000000000000;
             cb->piece[turn][ROOK] |= 0x0800000000000000;
-
             cb->hash ^= zobrist_pieces[BLACK][ROOK][a8];
             cb->hash ^= zobrist_pieces[BLACK][ROOK][d8];
         }
         if(m.to == g8){
             cb->piece[turn][ROOK] &= ~0x8000000000000000;
             cb->piece[turn][ROOK] |= 0x2000000000000000;
-
             cb->hash ^= zobrist_pieces[BLACK][ROOK][h8];
             cb->hash ^= zobrist_pieces[BLACK][ROOK][f8];
         }
-
         cb->castle &= 0b1100; //On retire les droits de roque
-
-
     }
     
     if(!turn){ //la clock des coups
-        lostdata->fullmove = cb->fullmove;
         cb->fullmove += 1; 
     }
     
-    cb->halfmoveclock +=1; //la clock des demis-coups
-    lostdata->halfmoveclock = cb->halfmoveclock;
-    lostdata->castle = cb->castle;
-    lostdata->enPassantSquare = cb->enPassantSquare;
     cb->halfmoveclock +=1; //la clock des demis-coups
     cb->enPassantSquare = -1;
 }
@@ -347,9 +337,9 @@ void makeMove_capture_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
         cb->piece[other_turn][m.captured] &= ~to; //On enleve la piece capturée
         hash ^= zobrist_pieces[other_turn][m.captured][m.to];
     }
-
+    lostdata->fullmove = cb->fullmove;
     if(other_turn == WHITE){ //la clock des coups
-        lostdata->fullmove = cb->fullmove;
+        
         cb->fullmove += 1;
     }
 
@@ -380,8 +370,9 @@ void makeMove_default_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
     hash ^= zobrist_pieces[turn][m.piece][m.from];
     hash ^= zobrist_pieces[turn][m.piece][m.to];
 
+    lostdata->fullmove = cb->fullmove;
     if(!turn){ //la clock des coups
-        lostdata->fullmove = cb->fullmove;
+        
         cb->fullmove += 1; 
     }
 
