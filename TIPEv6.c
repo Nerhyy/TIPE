@@ -708,14 +708,14 @@ int pawn_chain(U64 piece[2][7]){
     U64 b_defenders_west = b_p_defenders_from_west(piece[BLACK][PAWN]);
     U64 b_defenders_east = b_p_defenders_from_east(piece[BLACK][PAWN]);
 
-    score += 20*popCount(defended_defenders_west(w_defended_west, w_defenders_west) || defended_defenders_east(w_defended_east,w_defenders_east));
-    score -= 20*popCount(defended_defenders_west(b_defended_west, b_defenders_west) || defended_defenders_east(b_defended_east,b_defenders_east));
+    score += 25*popCount(defended_defenders_west(w_defended_west, w_defenders_west) || defended_defenders_east(w_defended_east,w_defenders_east));
+    score -= 25*popCount(defended_defenders_west(b_defended_west, b_defenders_west) || defended_defenders_east(b_defended_east,b_defenders_east));
 
-    score += 13*popCount(defended_ndefenders_west(w_defended_west, w_defenders_west) || defended_ndefenders_east(w_defended_east, w_defenders_east));
-    score -= 13*popCount(defended_ndefenders_west(b_defended_west, b_defenders_west) || defended_ndefenders_east(b_defended_east, b_defenders_east));
+    score += 17*popCount(defended_ndefenders_west(w_defended_west, w_defenders_west) || defended_ndefenders_east(w_defended_east, w_defenders_east));
+    score -= 17*popCount(defended_ndefenders_west(b_defended_west, b_defenders_west) || defended_ndefenders_east(b_defended_east, b_defenders_east));
 
-    score += 7*popCount(ndefended_defenders_west(w_defended_west, w_defenders_west) || ndefended_defenders_east(w_defended_east, w_defenders_east));
-    score -= 7*popCount(ndefended_defenders_west(b_defended_west, b_defenders_west) || ndefended_defenders_east(b_defended_east, b_defenders_east));
+    score += 10*popCount(ndefended_defenders_west(w_defended_west, w_defenders_west) || ndefended_defenders_east(w_defended_east, w_defenders_east));
+    score -= 10*popCount(ndefended_defenders_west(b_defended_west, b_defenders_west) || ndefended_defenders_east(b_defended_east, b_defenders_east));
 
     return score;
 }
