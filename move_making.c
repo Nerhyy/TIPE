@@ -551,42 +551,44 @@ void unmakeMove(chessboard* cb, move m, ld* lostdata){ //FINIR DE DEBUG
 //false -> illegal move
 bool legalmove_check(chessboard* cb, move m){
     //printf("legalmovecheck! \n");
-    if((cb->piece[cb->turn][KING] == 0) || (cb->piece[!cb->turn][KING] == 0)){
+    int turn = cb->turn;
+    int other_turn = !turn;
+    if((cb->piece[turn][KING] == 0) || (cb->piece[other_turn][KING] == 0)){
         return false; //GARDE
     }
     if(m.flag == CASTLE){
-        if(cb->turn == WHITE){
+        if(turn == WHITE){
 
-            if(cb->piece[!cb->turn][KING] == G1){
-                return !is_square_attacked(cb, g1, !cb->turn)
-                && !is_square_attacked(cb, f1, !cb->turn)
-                && !is_square_attacked(cb, e1, !cb->turn);
+            if(cb->piece[other_turn][KING] == G1){
+                return !is_square_attacked(cb, g1, other_turn)
+                && !is_square_attacked(cb, f1, other_turn)
+                && !is_square_attacked(cb, e1, other_turn);
             }
 
-            if(cb->piece[!cb->turn][KING] == C1){
-                return !is_square_attacked(cb, c1, !cb->turn)
-                && !is_square_attacked(cb, d1, !cb->turn)
-                && !is_square_attacked(cb, e1, !cb->turn);
+            if(cb->piece[other_turn][KING] == C1){
+                return !is_square_attacked(cb, c1, other_turn)
+                && !is_square_attacked(cb, d1, other_turn)
+                && !is_square_attacked(cb, e1, other_turn);
             }
 
         }
-        if(cb->turn == BLACK){
+        if(turn == BLACK){
 
-            if(cb->piece[!cb->turn][KING] == G8){
-                return !is_square_attacked(cb, f8, !cb->turn)
-                && !is_square_attacked(cb, g8, !cb->turn)
-                && !is_square_attacked(cb, e8, !cb->turn);
+            if(cb->piece[other_turn][KING] == G8){
+                return !is_square_attacked(cb, f8, other_turn)
+                && !is_square_attacked(cb, g8, other_turn)
+                && !is_square_attacked(cb, e8, other_turn);
             }
 
-            if(cb->piece[!cb->turn][KING] == C8){
-                return !is_square_attacked(cb,c8 , !cb->turn)
-                && !is_square_attacked(cb,d8 , !cb->turn)
-                && !is_square_attacked(cb, e8, !cb->turn);
+            if(cb->piece[other_turn][KING] == C8){
+                return !is_square_attacked(cb,c8 , other_turn)
+                && !is_square_attacked(cb,d8 , other_turn)
+                && !is_square_attacked(cb, e8, other_turn);
             }
 
         }
     }
-    return !is_square_attacked(cb, deserialize(cb->piece[!cb->turn][KING]), !cb->turn);
+    return !is_square_attacked(cb, deserialize(cb->piece[other_turn][KING]), other_turn);
 }
 
 
@@ -603,7 +605,8 @@ moveList* legalMoveList (chessboard* cb){
     moveList* ll = createList();
 
     // Itération standard de 0 à l.count
-    for (int i = 0; i < l.count; i++) {
+    int n_moves = l.count;
+    for (int i = 0; i < n_moves; i++) {
         makeMove_ld(cb, l.moves[i], &lostdata);
         if(!legalmove_check(cb, l.moves[i])){
             unmakeMove(cb, l.moves[i], &lostdata);
@@ -617,6 +620,7 @@ moveList* legalMoveList (chessboard* cb){
     return ll;
 }
 
+
 moveList* legalCaptureMoveList (chessboard* cb){
     moveList l;
     l.count = 0;
@@ -624,9 +628,9 @@ moveList* legalCaptureMoveList (chessboard* cb){
 
     ld lostdata = {.castle = -1, .enPassantSquare = -1, .fullmove = -1, .halfmoveclock = -1};
     moveList* ll = createList();
-
+    int n_moves = l.count;
     // Itération standard de 0 à l.count
-    for (int i = 0; i < l.count; i++) {
+    for (int i = 0; i < n_moves; i++) {
         if(l.moves[i].captured != 0){
             makeMove_ld(cb, l.moves[i], &lostdata);
 

@@ -884,9 +884,9 @@ move findBestMove(chessboard* cb, int depth){
 
     moveList* l = legalMoveList(cb);
     ld lostdata = {.castle = -1, .enPassantSquare = -1, .fullmove = -1, .halfmoveclock = -1};
-
+    int n_moves = l->count;
     //Recherche en profondeur du meilleur coup
-    for(int i = 0 ; i < l->count; i++){
+    for(int i = 0 ; i < n_moves; i++){
 
         makeMove_ld(cb, l->moves[i] , &lostdata);
         //Calcul en profondeur
