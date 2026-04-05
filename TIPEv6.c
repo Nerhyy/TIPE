@@ -120,16 +120,16 @@ int eval(chessboard* cb){
 int castling_eval(chessboard* cb){
 
     int score =0;
-    if((cb->castle & 0x0001 == 0) && ((rectLookup[d8][g8] && cb->piece[BLACK][KING]) != 0)){
+    if(((cb->castle & 0x0001) == 0) && ((rectLookup[d8][g8] && cb->piece[BLACK][KING]) != 0)){
         score += 20;
     }
-    if((cb->castle & 0x0010 == 0) && ((rectLookup[f8][b8] && cb->piece[BLACK][KING]) != 0)){
+    if(((cb->castle & 0x0010) == 0) && ((rectLookup[f8][b8] && cb->piece[BLACK][KING]) != 0)){
         score += 20;
     }
-    if((cb->castle & 0x0100 == 0) && ((rectLookup[d1][g1] && cb->piece[WHITE][KING]) != 0) ){
+    if(((cb->castle & 0x0100) == 0) && ((rectLookup[d1][g1] && cb->piece[WHITE][KING]) != 0) ){
         score -= 20;
     }
-    if((cb->castle & 0x1000 == 0) && ((rectLookup[f1][b1] && cb->piece[WHITE][KING]) != 0) ){
+    if(((cb->castle & 0x1000) == 0) && ((rectLookup[f1][b1] && cb->piece[WHITE][KING]) != 0) ){
         score -= 20;
     }
 
@@ -417,13 +417,13 @@ int double_pawns(U64 piece[2][7]){
 void open_files(U64 piece[2][7], bool* white_openfiles, bool* black_openfiles){ //Remplit les tableaux
 
         for(int i = 0; i < 8; i++){ //Il y a t il des pions sur les colonnes ?
-            if(piece[WHITE][PAWN] & files[i] != 0){
+            if((piece[WHITE][PAWN] & files[i]) != 0){
                 white_openfiles[i] = true;
             }
             else{
                 white_openfiles[i] = false;
             }
-            if(piece[BLACK][PAWN] & files[i] != 0){
+            if((piece[BLACK][PAWN] & files[i]) != 0){
                 black_openfiles[i] = true;
             }
             else{
@@ -711,11 +711,39 @@ int mobility (U64 piece[2][7]){
 
 }
 
+
+int pawn_chain(U64 piece[2][7]){
+    int score = 0;
+
+    U64 w_defended_west = w_p_defended_from_west(piece[WHITE][PAWN]);
+    U64 w_defended_east = w_p_defended_from_east(piece[WHITE][PAWN]);
+    U64 b_defended_west = b_p_defended_from_west(piece[BLACK][PAWN]);
+    U64 b_defended_east = b_p_defended_from_east(piece[BLACK][PAWN]);
+
+    U64 w_defenders_west = w_p_defenders_from_west(piece[WHITE][PAWN]);
+    U64 w_defenders_east = w_p_defenders_from_east(piece[WHITE][PAWN]);
+    U64 b_defenders_west = b_p_defenders_from_west(piece[BLACK][PAWN]);
+    U64 b_defenders_east = b_p_defenders_from_east(piece[BLACK][PAWN]);
+
+    score += 20*popCount(defended_defenders_west(w_defended_west, w_defenders_west) || defended_defenders_east(w_defended_east,w_defenders_east));
+    score -= 20*popCount(defended_defenders_west(b_defended_west, b_defenders_west) || defended_defenders_east(b_defended_east,b_defenders_east));
+
+    score += 13*popCount(defended_ndefenders_west(w_defended_west, w_defenders_west) || defended_ndefenders_east(w_defended_east, w_defenders_east));
+    score -= 13*popCount(defended_ndefenders_west(b_defended_west, b_defenders_west) || defended_ndefenders_east(b_defended_east, b_defenders_east));
+
+    score += 7*popCount(ndefended_defenders_west(w_defended_west, w_defenders_west) || ndefended_defenders_east(w_defended_east, w_defenders_east));
+    score -= 7*popCount(ndefended_defenders_west(b_defended_west, b_defenders_west) || ndefended_defenders_east(b_defended_east, b_defenders_east));
+
+    return score;
+}
+
 int pawn_eval(U64 piece[2][7]){
     int score = 0;
     score += isolated_pawns(piece);
     score += double_pawns(piece);
     score += passed_pawns(piece);
+    score += pawn_chain(piece);
+    
     return score;
 }
 

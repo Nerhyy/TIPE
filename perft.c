@@ -98,7 +98,7 @@ void counting_stats(chessboard* cb, move m, int depth){
 U64 perft(chessboard *cb, int depth){
 
 
-    if((depth == 0)){
+    if(depth == 0){
         return 0;
     }
 
