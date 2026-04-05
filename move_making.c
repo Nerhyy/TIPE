@@ -253,114 +253,99 @@ void reset_lostdata(ld* lostdata){
 
 void makeMove_castle_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
 {
-    if(cb->turn == WHITE){
-        cb->piece[cb->turn][KING] &= ~from;   // On retire la piece
-        cb->piece[cb->turn][KING] |= to;     //On pose la nouvelle piece sur la nouvelle case
-        cb->hash ^= zobrist_pieces[WHITE][KING][m.from];
-        cb->hash ^= zobrist_pieces[WHITE][KING][m.to];
+    int turn = cb->turn;
+    cb->piece[turn][KING] &= ~from;   // On retire la piece
+    cb->piece[turn][KING] |= to;     //On pose la nouvelle piece sur la nouvelle case
+    cb->hash ^= zobrist_pieces[turn][KING][m.from];
+    cb->hash ^= zobrist_pieces[turn][KING][m.to];
+    if(turn == WHITE){
 
         if(m.to == c1){
-            cb->piece[cb->turn][ROOK] &= ~0x0000000000000001;
-            cb->piece[cb->turn][ROOK] |= 0x0000000000000008;
+            cb->piece[turn][ROOK] &= ~0x0000000000000001;
+            cb->piece[turn][ROOK] |= 0x0000000000000008;
 
             cb->hash ^= zobrist_pieces[WHITE][ROOK][a1];
             cb->hash ^= zobrist_pieces[WHITE][ROOK][d1];
         }
         if(m.to == g1){
-            cb->piece[cb->turn][ROOK] &= ~0x0000000000000080;
-            cb->piece[cb->turn][ROOK] |= 0x0000000000000020;
+            cb->piece[turn][ROOK] &= ~0x0000000000000080;
+            cb->piece[turn][ROOK] |= 0x0000000000000020;
             cb->hash ^= zobrist_pieces[WHITE][ROOK][h1];
             cb->hash ^= zobrist_pieces[WHITE][ROOK][f1];
         }
 
-        if(!cb->turn){ //la clock des coups
-            lostdata->fullmove = cb->fullmove;
-            cb->fullmove += 1; 
-        }
 
-        lostdata->halfmoveclock = cb->halfmoveclock;
-        cb->halfmoveclock +=1; //la clock des demis-coups
-
-        lostdata->castle = cb->castle;
         cb->castle &= 0b0011; //On retire les droits de roque
 
-        lostdata->enPassantSquare = cb->enPassantSquare;
-        cb->enPassantSquare = -1;
-
-
-
     }
-    else if (cb->turn == BLACK){
-        cb->piece[cb->turn][KING] &= ~from;   // On retire la piece
-        cb->piece[cb->turn][KING] |= to;     //On pose la nouvelle piece sur la nouvelle case
-        cb->hash ^= zobrist_pieces[BLACK][KING][m.from];
-        cb->hash ^= zobrist_pieces[BLACK][KING][m.to];
+    else if (turn == BLACK){
+
 
         if(m.to == c8){
-            cb->piece[cb->turn][ROOK] &= ~0x0100000000000000;
-            cb->piece[cb->turn][ROOK] |= 0x0800000000000000;
+            cb->piece[turn][ROOK] &= ~0x0100000000000000;
+            cb->piece[turn][ROOK] |= 0x0800000000000000;
 
             cb->hash ^= zobrist_pieces[BLACK][ROOK][a8];
             cb->hash ^= zobrist_pieces[BLACK][ROOK][d8];
         }
         if(m.to == g8){
-            cb->piece[cb->turn][ROOK] &= ~0x8000000000000000;
-            cb->piece[cb->turn][ROOK] |= 0x2000000000000000;
+            cb->piece[turn][ROOK] &= ~0x8000000000000000;
+            cb->piece[turn][ROOK] |= 0x2000000000000000;
 
             cb->hash ^= zobrist_pieces[BLACK][ROOK][h8];
             cb->hash ^= zobrist_pieces[BLACK][ROOK][f8];
         }
 
-        if(!cb->turn){ //la clock des coups
-            lostdata->fullmove = cb->fullmove;
-            cb->fullmove += 1;
-        }
-
-        lostdata->halfmoveclock = cb->halfmoveclock;
-        cb->halfmoveclock +=1; //la clock des demis-coups
-
-        lostdata->castle = cb->castle;
         cb->castle &= 0b1100; //On retire les droits de roque
 
-        lostdata->enPassantSquare = cb->enPassantSquare;
-        cb->enPassantSquare = -1;
 
     }
+    
+    if(!turn){ //la clock des coups
+        lostdata->fullmove = cb->fullmove;
+        cb->fullmove += 1; 
+    }
+    
+    cb->halfmoveclock +=1; //la clock des demis-coups
+    lostdata->halfmoveclock = cb->halfmoveclock;
+    lostdata->castle = cb->castle;
+    lostdata->enPassantSquare = cb->enPassantSquare;
+    cb->halfmoveclock +=1; //la clock des demis-coups
+    cb->enPassantSquare = -1;
 }
 //modifié
 void makeMove_capture_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
 {
-
+    int turn = cb->turn;
+    int hash = cb->hash;
     lostdata->enPassantSquare = cb->enPassantSquare;
     cb->enPassantSquare = -1;
 
-    cb->piece[cb->turn][m.piece] &= ~from;   // On retire la piece
-    cb->piece[cb->turn][m.piece] |= to;     //On pose la nouvelle piece sur la nouvelle case
+    cb->piece[turn][m.piece] &= ~from;   // On retire la piece
+    cb->piece[turn][m.piece] |= to;     //On pose la nouvelle piece sur la nouvelle case
 
-    cb->hash ^= zobrist_pieces[cb->turn][m.piece][m.from];
-    cb->hash ^= zobrist_pieces[cb->turn][m.piece][m.to];
+    hash ^= zobrist_pieces[turn][m.piece][m.from];
+    hash ^= zobrist_pieces[turn][m.piece][m.to];
 
-    int other_turn = 1 - cb->turn;
+    int other_turn = 1 - turn;
     // En cas de capture EN PASSANT________________________________________________________________________________
     if(m.flag == ENPASSANT){
 
 
         
-        if(cb->turn == WHITE){
+        if(turn == WHITE){
             cb->piece[other_turn][m.captured] &= ~(to >> 8); //On enleve la piece capturée                              A VERIFIER
-
-            cb->hash ^= zobrist_pieces[other_turn][PAWN][m.to - 8];
+            hash ^= zobrist_pieces[other_turn][PAWN][m.to - 8];
         }
-        if(cb->turn == BLACK){
+        if(turn == BLACK){
             cb->piece[other_turn][m.captured] &= ~(to << 8); //On enleve la piece capturée                              A VERIFIER
-            cb->hash ^= zobrist_pieces[other_turn][PAWN][m.to + 8];
+            hash ^= zobrist_pieces[other_turn][PAWN][m.to + 8];
         }
         
     }
     else{
         cb->piece[other_turn][m.captured] &= ~to; //On enleve la piece capturée
-
-        cb->hash ^= zobrist_pieces[other_turn][m.captured][m.to];
+        hash ^= zobrist_pieces[other_turn][m.captured][m.to];
     }
 
     if(other_turn == WHITE){ //la clock des coups
@@ -379,21 +364,23 @@ void makeMove_capture_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
     if(m.promo != 0){
         promotion(cb, m, to);
 
-        cb->hash ^= zobrist_pieces[cb->turn][PAWN][m.to];
-        cb->hash ^= zobrist_pieces[cb->turn][m.promo][m.to];
+        hash ^= zobrist_pieces[turn][PAWN][m.to];
+        hash ^= zobrist_pieces[turn][m.promo][m.to];
     }
+    cb->hash = hash;
 }
 //modifié
 void makeMove_default_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
 {
+    int turn = cb->turn;
+    int hash = cb->hash;
+    cb->piece[turn][m.piece] &= ~from; // On retire la piece
+    cb->piece[turn][m.piece] |= to;   //On pose la nouvelle piece sur la nouvelle case
 
-    cb->piece[cb->turn][m.piece] &= ~from; // On retire la piece
-    cb->piece[cb->turn][m.piece] |= to;   //On pose la nouvelle piece sur la nouvelle case
+    hash ^= zobrist_pieces[turn][m.piece][m.from];
+    hash ^= zobrist_pieces[turn][m.piece][m.to];
 
-    cb->hash ^= zobrist_pieces[cb->turn][m.piece][m.from];
-    cb->hash ^= zobrist_pieces[cb->turn][m.piece][m.to];
-
-    if(!cb->turn){ //la clock des coups
+    if(!turn){ //la clock des coups
         lostdata->fullmove = cb->fullmove;
         cb->fullmove += 1; 
     }
@@ -408,11 +395,11 @@ void makeMove_default_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
     if(m.piece == PAWN){ //Detection de en passant
         if(abs(m.to - m.from) == 16){
 
-            if(cb->turn == WHITE){
+            if(turn == WHITE){
                 //lostdata->enPassantSquare = cb->enPassantSquare;
                 cb->enPassantSquare = (m.from + 8); //ajoute du enPassantSquare
             }
-            else if (cb->turn == BLACK){
+            else if (turn == BLACK){
                 //lostdata->enPassantSquare = cb->enPassantSquare;
                 cb->enPassantSquare = (m.from - 8); //ajoute du enPassantSquare
             }
@@ -430,24 +417,24 @@ void makeMove_default_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
     if(m.promo != 0){
         promotion(cb, m, to);
 
-        cb->hash ^= zobrist_pieces[cb->turn][PAWN][m.to];
-        cb->hash ^= zobrist_pieces[cb->turn][m.promo][m.to];
+        hash ^= zobrist_pieces[turn][PAWN][m.to];
+        hash ^= zobrist_pieces[turn][m.promo][m.to];
     }
+    cb->hash = hash;
 }
 //modifié
 void makeMove_ld(chessboard* cb, move m, ld* lostdata){ //                     A TESTER
-
-    lostdata->hash = cb->hash;
-
-    cb->hash ^= zobrist_castling[cb->castle];
+    int hash = cb->hash;
+    lostdata->hash = hash;
+    hash ^= zobrist_castling[cb->castle];
     if(cb->enPassantSquare != -1){
-        cb->hash ^= zobrist_en_passant[cb->enPassantSquare % 8];
+        hash ^= zobrist_en_passant[cb->enPassantSquare % 8];
     }
 
     U64 to = serialize(m.to);
     U64 from = serialize(m.from);
 
-
+    cb->hash = hash;
     if(m.flag == CASTLE){
         makeMove_castle_ld(cb, m, lostdata, from, to);
     }
@@ -457,16 +444,16 @@ void makeMove_ld(chessboard* cb, move m, ld* lostdata){ //                     A
     else{ //Coups normaux______________________________________________________________________
         makeMove_default_ld(cb, m, lostdata, from, to);
     }
-
-    cb->hash ^= zobrist_castling[cb->castle];
+    hash = cb->hash;
+    hash ^= zobrist_castling[cb->castle];
     if(cb->enPassantSquare != -1){
-        cb->hash ^= zobrist_en_passant[cb->enPassantSquare % 8];
+        hash ^= zobrist_en_passant[cb->enPassantSquare % 8];
     }
 
     cb->turn = 1 - cb->turn; //On change le tour
 
-    cb->hash ^= zobrist_black_to_move;
-
+    hash ^= zobrist_black_to_move;
+    cb->hash = hash;
     // --- LE TEST ULTIME (À ENLEVER QUAND TOUT MARCHE) ---
     /*U64 verif_hash = generate_hash(cb);
     if (cb->hash != verif_hash) {
@@ -479,73 +466,74 @@ void makeMove_ld(chessboard* cb, move m, ld* lostdata){ //                     A
 void unmakeMove(chessboard* cb, move m, ld* lostdata){ //FINIR DE DEBUG
     U64 to = serialize(m.to);
     U64 from = serialize(m.from);
-
+    int turn = cb->turn;
+    int other_turn = !turn;
 
     if(m.flag == CASTLE){ //Roque
 
-        if(cb->piece[!cb->turn][KING] == G1){
+        if(cb->piece[other_turn][KING] == G1){
 
-            cb->piece[!cb->turn][KING] &= ~G1;
-            cb->piece[!cb->turn][ROOK] &= ~F1;
+            cb->piece[other_turn][KING] &= ~G1;
+            cb->piece[other_turn][ROOK] &= ~F1;
 
-            cb->piece[!cb->turn][KING] |= E1;
-            cb->piece[!cb->turn][ROOK] |= H1;
-
-        }
-        else if(cb->piece[!cb->turn][KING] == G8){
-
-            cb->piece[!cb->turn][KING] &= ~G8;
-            cb->piece[!cb->turn][ROOK] &= ~F8;
-
-            cb->piece[!cb->turn][KING] |= E8;
-            cb->piece[!cb->turn][ROOK] |= H8;
+            cb->piece[other_turn][KING] |= E1;
+            cb->piece[other_turn][ROOK] |= H1;
 
         }
-        else if(cb->piece[!cb->turn][KING] == C1){
+        else if(cb->piece[other_turn][KING] == G8){
 
-            cb->piece[!cb->turn][KING] &= ~C1;
-            cb->piece[!cb->turn][ROOK] &= ~D1;
+            cb->piece[other_turn][KING] &= ~G8;
+            cb->piece[other_turn][ROOK] &= ~F8;
 
-            cb->piece[!cb->turn][KING] |= E1;
-            cb->piece[!cb->turn][ROOK] |= A1;
+            cb->piece[other_turn][KING] |= E8;
+            cb->piece[other_turn][ROOK] |= H8;
 
         }
-        else if(cb->piece[!cb->turn][KING] == C8){
+        else if(cb->piece[other_turn][KING] == C1){
 
-            cb->piece[!cb->turn][KING] &= ~C8;
-            cb->piece[!cb->turn][ROOK] &= ~D8;
+            cb->piece[other_turn][KING] &= ~C1;
+            cb->piece[other_turn][ROOK] &= ~D1;
 
-            cb->piece[!cb->turn][KING] |= E8;
-            cb->piece[!cb->turn][ROOK] |= A8;
+            cb->piece[other_turn][KING] |= E1;
+            cb->piece[other_turn][ROOK] |= A1;
+
+        }
+        else if(cb->piece[other_turn][KING] == C8){
+
+            cb->piece[other_turn][KING] &= ~C8;
+            cb->piece[other_turn][ROOK] &= ~D8;
+
+            cb->piece[other_turn][KING] |= E8;
+            cb->piece[other_turn][ROOK] |= A8;
 
         }
     }
     else if(m.captured != 0){ 
         if(m.promo != 0){ 
-            cb->piece[!cb->turn][m.promo] &= ~to;  
-            cb->piece[!cb->turn][m.piece] |= from; 
-            cb->piece[cb->turn][m.captured] |= to; 
+            cb->piece[other_turn][m.promo] &= ~to;  
+            cb->piece[other_turn][m.piece] |= from; 
+            cb->piece[turn][m.captured] |= to; 
         }
         else if(m.flag == ENPASSANT){
-            cb->piece[!cb->turn][m.piece] &= ~to; 
-            cb->piece[!cb->turn][m.piece] |= from;   
-            if (!cb->turn == WHITE) cb->piece[cb->turn][m.captured] |= to >> 8; 
-            else                    cb->piece[cb->turn][m.captured] |= to << 8; 
+            cb->piece[other_turn][m.piece] &= ~to; 
+            cb->piece[other_turn][m.piece] |= from;   
+            if (other_turn == WHITE) cb->piece[turn][m.captured] |= to >> 8; 
+            else                    cb->piece[turn][m.captured] |= to << 8; 
         }
         else{
-            cb->piece[!cb->turn][m.piece] &= ~to; 
-            cb->piece[!cb->turn][m.piece] |= from;   
-            cb->piece[cb->turn][m.captured] |= to; 
+            cb->piece[other_turn][m.piece] &= ~to; 
+            cb->piece[other_turn][m.piece] |= from;   
+            cb->piece[turn][m.captured] |= to; 
         }
     }
     else{ // Coups normaux
         if(m.promo != 0){ 
-            cb->piece[!cb->turn][m.promo] &= ~to;
-            cb->piece[!cb->turn][m.piece] |= from;   
+            cb->piece[other_turn][m.promo] &= ~to;
+            cb->piece[other_turn][m.piece] |= from;   
         }
         else { 
-            cb->piece[!cb->turn][m.piece] &= ~to; 
-            cb->piece[!cb->turn][m.piece] |= from;   
+            cb->piece[other_turn][m.piece] &= ~to; 
+            cb->piece[other_turn][m.piece] |= from;   
         }
     }
 
@@ -556,7 +544,7 @@ void unmakeMove(chessboard* cb, move m, ld* lostdata){ //FINIR DE DEBUG
     cb->castle          = lostdata->castle;
     cb->hash            = lostdata->hash; 
 
-    cb->turn = !cb->turn; 
+    cb->turn = other_turn; 
 }
 
 //true  -> legal move

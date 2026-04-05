@@ -774,8 +774,6 @@ int quiescence(chessboard* cb, int alpha, int beta){
     return alpha;
 }
 
-//int count = 0;
-
 int negaMax(chessboard* cb, int depth, int alpha, int beta){
 
     int originalAlpha = alpha;
@@ -796,7 +794,7 @@ int negaMax(chessboard* cb, int depth, int alpha, int beta){
     moveList l;
     l.count = 0;
     generateMoves(cb,&l);
-
+    int n_move = l.count;
     if (tt_best_move.piece != 0) { // Si la TT a renvoyé un coup
         for (int i = 0; i < l.count; i++) {
             // On vérifie si le coup i est le même que celui de la TT
@@ -861,8 +859,6 @@ int negaMax(chessboard* cb, int depth, int alpha, int beta){
     store_tt(cb->hash, depth, max, originalAlpha, beta, best_move_for_this_node);
 
     return max;
-
-    
 }
 
 
@@ -879,29 +875,29 @@ move findBestMove(chessboard* cb, int depth){
     ld lostdata = {.castle = -1, .enPassantSquare = -1, .fullmove = -1, .halfmoveclock = -1};
 
     //Recherche en profondeur du meilleur coup
-        for(int i = 0 ; i < l->count; i++){
+    for(int i = 0 ; i < l->count; i++){
 
-            makeMove_ld(cb, l->moves[i] , &lostdata);
-            //Calcul en profondeur
-            int score = -negaMax(cb , depth - 1, -beta, -alpha);
+        makeMove_ld(cb, l->moves[i] , &lostdata);
+        //Calcul en profondeur
+        int score = -negaMax(cb , depth - 1, -beta, -alpha);
 
-            unmakeMove(cb, l->moves[i] , &lostdata);
+        unmakeMove(cb, l->moves[i] , &lostdata);
 
-            //Attribution du meilleur score
-            if(score > bestScore){
-                bestScore = score;
-                bestMove = l->moves[i];
-            }
-
-            if( score > alpha){
-                alpha = score;
-            }
-
+        //Attribution du meilleur score
+        if(score > bestScore){
+            bestScore = score;
+            bestMove = l->moves[i];
         }
 
-        free_moveList(l);
+        if( score > alpha){
+            alpha = score;
+        }
 
-        return bestMove;
+    }
+
+    free_moveList(l);
+
+    return bestMove;
 
 }
 
@@ -960,7 +956,7 @@ move findBestMove_IDS(chessboard* cb, int depth){
 
     moveList* l = legalMoveList(cb);
     ld lostdata = {.castle = -1, .enPassantSquare = -1, .fullmove = -1, .halfmoveclock = -1};
-
+    int n_moves = l->count;
     //Recherche en profondeur du meilleur coup
     for(int j = 1; j <= depth; j++){
         
@@ -969,18 +965,19 @@ move findBestMove_IDS(chessboard* cb, int depth){
         int beta  =  1000000000;
         move bestMoveForThisDepth = {0,0,0,0,0,0};
 
-        for(int i = 0 ; i < l->count; i++){
-
-            makeMove_ld(cb, l->moves[i] , &lostdata);
+        for(int i = 0 ; i < n_moves; i++){
+            move current_move = l->moves[i];
+            
+            makeMove_ld(cb,  current_move, &lostdata);
             //Calcul en profondeur
             int score = -negaMax(cb , j - 1, -beta, -alpha);
 
-            unmakeMove(cb, l->moves[i] , &lostdata);
+            unmakeMove(cb, current_move, &lostdata);
             
             //Attribution du meilleur score
             if(score > bestScore){
                 bestScore = score;
-                bestMoveForThisDepth = l->moves[i];
+                bestMoveForThisDepth = current_move;
             }
 
             if( score > alpha){
@@ -989,7 +986,6 @@ move findBestMove_IDS(chessboard* cb, int depth){
 
         }
         bestMove = bestMoveForThisDepth;
-        //printf("score %d: \n", bestScore);
     }
     free_moveList(l);
     return bestMove;
