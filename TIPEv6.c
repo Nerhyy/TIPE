@@ -301,6 +301,16 @@ const int b_king_place_endgame[64] = {
     -50,-40,-30,-20,-20,-30,-40,-50,
 };
 
+const int mvv_lva_table[7][7] = {
+    {0, 0, 0, 0, 0, 0, 0}, // 0: EMPTY (Pas de capture)
+    {0, 105, 104, 103, 102, 101, 100}, // 1: Pion capturé
+    {0, 205, 204, 203, 202, 201, 200}, // 2: Cavalier capturé
+    {0, 305, 304, 303, 302, 301, 300}, // 3: Fou capturé
+    {0, 405, 404, 403, 402, 401, 400}, // 4: Tour capturée
+    {0, 505, 504, 503, 502, 501, 500}, // 5: Reine capturée
+    {0, 0, 0, 0, 0, 0, 0}              // 6: Roi (n'est techniquement jamais capturé)
+};
+
 const int* all_placements[2][8] = {
     // ================= BLANCS =================
     [WHITE] = {
@@ -754,15 +764,48 @@ int quiescence(chessboard* cb, int alpha, int beta){
 
     moveList l;
     l.count = 0;
+    
     generateMoves(cb, &l);
+
+    int move_scores[256] = {0};
+
+    for (int i = 0; i < l.count; i++) {
+        if (l.moves[i].captured != EMPTY) {
+            move_scores[i] = mvv_lva_table[l.moves[i].captured][l.moves[i].piece];
+        } 
+        else if (l.moves[i].promo != EMPTY) {
+            move_scores[i] = 900; 
+        } 
+        else {
+            move_scores[i] = 0; 
+        }
+    }
 
     ld lostdata = create_lostdata2();
 
     for (int i = 0; i < l.count; i++) {
 
-        if (l.moves[i].captured == 0) {
-            continue; 
+        // --- ÉTAPE DE TRI ---
+        int best_score_idx = i;
+        for (int j = i + 1; j < l.count; j++) {
+            if (move_scores[j] > move_scores[best_score_idx]) {
+                best_score_idx = j;
+            }
         }
+
+       
+        // on arrête complètement d'explorer les nœuds pour cette position 
+        if (move_scores[best_score_idx] == 0) {
+            break; 
+        }
+
+        move temp_move = l.moves[i];
+        l.moves[i] = l.moves[best_score_idx];
+        l.moves[best_score_idx] = temp_move;
+        
+        int temp_score = move_scores[i];
+        move_scores[i] = move_scores[best_score_idx];
+        move_scores[best_score_idx] = temp_score;
 
         makeMove_ld(cb, l.moves[i], &lostdata);
 
@@ -782,6 +825,7 @@ int quiescence(chessboard* cb, int alpha, int beta){
             alpha = score;
         }
     }
+    
     return alpha;
 }
 
@@ -800,73 +844,87 @@ int negaMax(chessboard* cb, int depth, int alpha, int beta){
         return quiescence(cb, alpha, beta);
     }
     
-
-    int max = -100000000; //On met une évaluation très élevée
+    int max = -100000000;
     moveList l;
     l.count = 0;
-    generateMoves(cb,&l);
-    int n_move = l.count;
-    if (tt_best_move.piece != 0) { // Si la TT a renvoyé un coup
-        for (int i = 0; i < l.count; i++) {
-            // On vérifie si le coup i est le même que celui de la TT
-            // (Ajustez les champs selon votre structure move, 'from' et 'to' suffisent généralement)
-            if (l.moves[i].from == tt_best_move.from && l.moves[i].to == tt_best_move.to) {
-                // On l'échange avec le tout premier coup (index 0)
-                move temp = l.moves[0];
-                l.moves[0] = l.moves[i];
-                l.moves[i] = temp;
-                break; // On a trouvé et placé le coup en premier, on arrête de chercher
-            }
+    generateMoves(cb, &l);
+
+
+    int move_scores[256] = {0};
+    //On met un score à chaque move (pour le tri)
+    for (int i = 0; i < l.count; i++) {
+        if (tt_best_move.piece != 0 && l.moves[i].from == tt_best_move.from && l.moves[i].to == tt_best_move.to) {
+            move_scores[i] = 1000000; 
+        } 
+        else if (l.moves[i].captured != EMPTY) {
+            move_scores[i] = mvv_lva_table[l.moves[i].captured][l.moves[i].piece];
+        } 
+        else if (l.moves[i].promo != EMPTY) {
+            move_scores[i] = 900; 
+        } 
+        else {
+            move_scores[i] = 0; 
         }
     }
 
     ld lostdata = create_lostdata2();
     move best_move_for_this_node = {0};
-
     int legal_moves_played = 0;
 
-    //Recherche en profondeur du meilleur coup
     for(int i = 0 ; i < l.count; i++){
-            
+        
+        // --- ÉTAPE DE TRI ---
+        int best_score_idx = i;
+        for (int j = i + 1; j < l.count; j++) {
+            if (move_scores[j] > move_scores[best_score_idx]) {
+                best_score_idx = j;
+            }
+        }
+        
+        move temp_move = l.moves[i];
+        l.moves[i] = l.moves[best_score_idx];
+        l.moves[best_score_idx] = temp_move;
+        
+        int temp_score = move_scores[i];
+        move_scores[i] = move_scores[best_score_idx];
+        move_scores[best_score_idx] = temp_score;
 
-        makeMove_ld(cb, l.moves[i] , &lostdata);
-        //Calcul en profondeur
-
+        makeMove_ld(cb, l.moves[i], &lostdata);
         if(!legalmove_check(cb, l.moves[i])){
-            unmakeMove(cb, l.moves[i] , &lostdata);
+            unmakeMove(cb, l.moves[i], &lostdata);
             continue;
         }
 
         legal_moves_played++;
 
-        int score = -negaMax(cb , depth - 1, -beta, -alpha); //On inverse beta et alpha dans un negamax
-        unmakeMove(cb, l.moves[i] , &lostdata);
+        // Calcul en profondeur (NegaMax)
+        int score = -negaMax(cb, depth - 1, -beta, -alpha); 
+        unmakeMove(cb, l.moves[i], &lostdata);
 
-        //Attribution du meilleur score
         if(score > max){
             max = score;
             best_move_for_this_node = l.moves[i];
         }
 
-        //Mise à jour du alpha
         if(score > alpha){
             alpha = score;
         }
 
-        //Elagage
         if(alpha >= beta){
-            break;
+            break; 
         }
     }
 
+
     if (legal_moves_played == 0) {
         if (is_square_attacked(cb, deserialize(cb->piece[cb->turn][KING]), cb->turn)) {
-            return -10000 + (100 - depth); // MAT 
+            return -10000 + (100 - depth); // MAT
         } else {
             return 0; // PAT
         }
     }
 
+    // Sauvegarde dans la Table de Transposition
     store_tt(cb->hash, depth, max, originalAlpha, beta, best_move_for_this_node);
 
     return max;
@@ -1025,7 +1083,7 @@ int main(int argc, char* argv[]){
         //printf("From chess engine: Waiting for a fen\n");
         //fgets(FEN, sizeof(FEN), stdin);
         chessboard *cb = convert_FEN_to_cb(FEN);
-        print_move(findBestMove_IDS(cb, 6));
+        print_move(findBestMove_IDS(cb, 5));
         fflush(stdout);
         running = false;
     }
