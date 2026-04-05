@@ -1076,16 +1076,16 @@ int main(int argc, char* argv[]){
     init_tt();
 
 
-    char FEN[92] = "r2qkbnr/pp3ppp/2np4/4p3/4N1b1/4BN2/PPP1PPPP/R2QKB1R w KQkq - 2 8" ;
+    char FEN[92] ;
     bool running = true;
     while (running)
     {
         //printf("From chess engine: Waiting for a fen\n");
-        //fgets(FEN, sizeof(FEN), stdin);
+        fgets(FEN, sizeof(FEN), stdin);
         chessboard *cb = convert_FEN_to_cb(FEN);
-        print_move(findBestMove_IDS(cb, 5));
+        print_move(findBestMove_IDS(cb, 7));
         fflush(stdout);
-        running = false;
+        //running = false;
     }
     //printf("hit :%d\n" , count);
     return 0;
