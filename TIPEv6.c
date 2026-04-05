@@ -416,20 +416,10 @@ int double_pawns(U64 piece[2][7]){
 
 void open_files(U64 piece[2][7], bool* white_openfiles, bool* black_openfiles){ //Remplit les tableaux
 
-        for(int i = 0; i < 8; i++){ //Il y a t il des pions sur les colonnes ?
-            if(piece[WHITE][PAWN] & files[i] != 0){
-                white_openfiles[i] = true;
-            }
-            else{
-                white_openfiles[i] = false;
-            }
-            if(piece[BLACK][PAWN] & files[i] != 0){
-                black_openfiles[i] = true;
-            }
-            else{
-                black_openfiles[i] = false;
-            }
-        }
+    for(int i = 0; i < 8; i++){ //Il y a t il des pions sur les colonnes ?
+        white_openfiles[i] = (piece[WHITE][PAWN] & files[i]) != 0;
+        black_openfiles[i] = (piece[BLACK][PAWN] & files[i]) != 0;
+    }
 
 }
 
@@ -446,35 +436,28 @@ int isolated_pawns(U64 piece[2][7]){ //A FACTORISER AVEC LES ROOKS ON OPEN FILES
 
         bool possede_voisin_w = false;
         bool possede_voisin_b = false;
-
-        if(i > 0){
-            if(istherepawnfileiw[i-1]){
-                possede_voisin_w = true;
-            }
-            if(istherepawnfileib[i-1]){
-                possede_voisin_b = true;
-            }
-        }
-
-        if(i > 7){
-            if(istherepawnfileiw[i+1]){
-                possede_voisin_w = true;
-            }
-            if(istherepawnfileib[i+1]){
-                possede_voisin_b = true;
-            }
-        }
+        possede_voisin_w = istherepawnfileiw[i - 1] || istherepawnfileiw[i + 1];
+        possede_voisin_b = istherepawnfileib[i - 1] || istherepawnfileib[i + 1];
 
         if(istherepawnfileiw[i] && !possede_voisin_w){
             score -= 15;
         }
         if(istherepawnfileib[i] && !possede_voisin_b){
-             score += 15;
+            score += 15;
         }
-
-
     }
-        
+    if(istherepawnfileiw[0] && !istherepawnfileiw[1]){
+        score -= 15;
+    }
+    if(istherepawnfileib[0] && !istherepawnfileiw[1]){
+        score += 15;
+    }
+    if(istherepawnfileiw[7] && !istherepawnfileiw[6]){
+        score -= 15;
+    }
+    if(istherepawnfileib[7] && !istherepawnfileiw[6]){
+        score += 15;
+    }
     return score;
 
 }
@@ -1012,11 +995,10 @@ int main(int argc, char* argv[]){
     while (running)
     {
         //printf("From chess engine: Waiting for a fen\n");
-        //fgets(FEN, sizeof(FEN), stdin);
+        fgets(FEN, sizeof(FEN), stdin);
         chessboard *cb = convert_FEN_to_cb(FEN);
         print_move(findBestMove_IDS(cb, 6));
         fflush(stdout);
-        running = false;
     }
     //printf("hit :%d\n" , count);
     return 0;
