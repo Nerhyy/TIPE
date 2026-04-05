@@ -130,15 +130,15 @@ enum flag{
     CASTLE = 2
 };
 
-//On peut réduire la taille de ces entiers à 1 octet ?
-typedef struct{
-    int from; 
-    int to;
-    int piece;
-    int captured;
-    int promo;
-    int flag;
-}move;
+//On peut réduire la taille de ces entiers à 1 octet ? (c'est fait presque mais mieux)
+typedef struct {
+    uint32_t from : 6;
+    uint32_t to : 6;
+    uint32_t piece : 3;
+    uint32_t captured : 3;
+    uint32_t promo : 3;
+    uint32_t flag : 2;
+} move; 
 
 /*
 typedef struct{
