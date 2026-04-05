@@ -548,7 +548,7 @@ bool legalmove_check(chessboard* cb, move m){
         return false; //GARDE
     }
     if(m.flag == CASTLE){
-        if(turn == WHITE){
+        if(other_turn == WHITE){
 
             if(cb->piece[other_turn][KING] == G1){
                 return !is_square_attacked(cb, g1, other_turn)
@@ -563,7 +563,7 @@ bool legalmove_check(chessboard* cb, move m){
             }
 
         }
-        if(turn == BLACK){
+        if(other_turn == BLACK){
 
             if(cb->piece[other_turn][KING] == G8){
                 return !is_square_attacked(cb, f8, other_turn)
