@@ -317,7 +317,7 @@ void makeMove_castle_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
 void makeMove_capture_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
 {
     int turn = cb->turn;
-    int hash = cb->hash;
+    U64 hash = cb->hash;
     lostdata->enPassantSquare = cb->enPassantSquare;
     cb->enPassantSquare = -1;
 
@@ -373,7 +373,7 @@ void makeMove_capture_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
 void makeMove_default_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
 {
     int turn = cb->turn;
-    int hash = cb->hash;
+    U64 hash = cb->hash;
     cb->piece[turn][m.piece] &= ~from; // On retire la piece
     cb->piece[turn][m.piece] |= to;   //On pose la nouvelle piece sur la nouvelle case
 
@@ -424,7 +424,7 @@ void makeMove_default_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
 }
 //modifié
 void makeMove_ld(chessboard* cb, move m, ld* lostdata){ //                     A TESTER
-    int hash = cb->hash;
+    U64 hash = cb->hash;
     lostdata->hash = hash;
     hash ^= zobrist_castling[cb->castle];
     if(cb->enPassantSquare != -1){
@@ -455,11 +455,11 @@ void makeMove_ld(chessboard* cb, move m, ld* lostdata){ //                     A
     hash ^= zobrist_black_to_move;
     cb->hash = hash;
     // --- LE TEST ULTIME (À ENLEVER QUAND TOUT MARCHE) ---
-    /*U64 verif_hash = generate_hash(cb);
+    U64 verif_hash = generate_hash(cb);
     if (cb->hash != verif_hash) {
         printf("ALERTE BUG ZOBRIST ! Coup joué : de %d à %d\n", m.from, m.to);
         assert(cb->hash == verif_hash); // Fait crasher le programme volontairement
-    }*/
+    }
 }
 
 
