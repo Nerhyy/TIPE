@@ -1,5 +1,6 @@
 #pragma once
 #include "globals.h"
+#include "eval.h"
 
 
 void print_mask(U64 mask); //ok

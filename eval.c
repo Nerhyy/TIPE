@@ -144,7 +144,7 @@ const int b_king_place[64] = {
     -30,-40,-40,-50,-50,-40,-40,-30
 };
 
-const int* all_placements[2][8] = {
+const int* all_placements[2][7] = {
     // ================= BLANCS =================
     [WHITE] = {
         [0] = 0,
@@ -303,7 +303,7 @@ const int b_king_place_endgame[64] = {
     -50,-40,-30,-20,-20,-30,-40,-50,
 };
 
-const int* all_placements_endgame[2][8] = {
+const int* all_placements_endgame[2][7] = {
     // ================= BLANCS =================
     [WHITE] = {
         [0] = 0,
@@ -929,7 +929,7 @@ int eval_midgame(chessboard* cb){
 
     int score = 0;
    
-    score += piece_eval(cb->piece);
+    score += cb->mg_score;
     score += mobility(cb->piece);
     score += pawn_eval(cb->piece);
     score += other_eval(cb->piece, cb->piece_count);
@@ -944,7 +944,7 @@ int eval_endgame(chessboard* cb){
 
     int score = 0;
    
-    score += piece_eval_endgame(cb->piece);
+    score += cb->eg_score;
     score += mobility(cb->piece);
     score += pawn_eval_endgame(cb->piece);
     score += other_eval(cb->piece, cb->piece_count);

@@ -9,8 +9,14 @@
 #include "pawns.h"
 
 
+extern const int* all_placements[2][7];
+
+extern const int* all_placements_endgame[2][7];
+
+extern const int piece_value[7];
 
 int piece_eval(U64 piece[2][7]);
+int piece_eval_endgame(U64 piece[2][7]);
 int double_pawns(U64 piece[2][7]);
 void open_files(U64 piece[2][7], bool* white_openfiles, bool* black_openfiles);
 int isolated_pawns(U64 piece[2][7]);

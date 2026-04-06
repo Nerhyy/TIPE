@@ -25,6 +25,9 @@ typedef struct echiquier{
     int fullmove;
     
     U64 hash;
+
+    int eg_score;
+    int mg_score;
 }chessboard;
 
 enum enumSquare { //serialized index for squares
@@ -159,6 +162,9 @@ typedef struct{
     int fullmove;
 
     U64 hash;
+
+    int eg_score;
+    int mg_score;
 }ld; //Pour le unmake move
 
 /////////////////////////////////////////// VARIABLES GLOBALES //////////////////////////////////////////

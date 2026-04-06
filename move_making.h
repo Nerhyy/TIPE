@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+#include "eval.h"
 #include "pawns.h"
 #include "knights.h"
 #include "rooks_and_bishops.h"

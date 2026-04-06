@@ -532,6 +532,9 @@ chessboard* convert_FEN_to_cb(char FEN[92]){
 
     cb->hash = generate_hash(cb);
     init_piece_counts(cb);
+
+    cb->mg_score = piece_eval(cb->piece);
+    cb->eg_score = piece_eval_endgame(cb->piece);
     
     return cb;
 }
