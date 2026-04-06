@@ -327,14 +327,14 @@ int isolated_pawns(U64 piece[2][7]){ //A FACTORISER AVEC LES ROOKS ON OPEN FILES
 
 }
 
-int bishop_pair(U64 piece[2][7]){
+int bishop_pair(U64 piece_count[2][7]){
 
     int score = 0;
 
-    if (popCount(piece[WHITE][BISHOP]) == 2){
+    if (piece_count[WHITE][BISHOP] == 2){
         score += 50;
     }
-    if(popCount(piece[BLACK][BISHOP] == 2)){
+    if(piece_count[BLACK][BISHOP] == 2){
         score -= 50;
     }
 
@@ -595,7 +595,7 @@ int pawn_eval(U64 piece[2][7]){
     return score;
 }
 
-int other_eval(U64 piece[2][7]){
+int other_eval(U64 piece[2][7], U64 piece_count[2][7]){
 
     int score =0;
 
@@ -603,7 +603,7 @@ int other_eval(U64 piece[2][7]){
     score += rook_on_7th(piece);
     score += bastion(piece);
     score += rook_on_open_files(piece);
-    score += bishop_pair(piece);
+    score += bishop_pair(piece_count);
 
     return score;
 }
@@ -634,7 +634,7 @@ int eval(chessboard* cb){
     score += piece_eval(cb->piece);
     score += mobility(cb->piece);
     score += pawn_eval(cb->piece);
-    score += other_eval(cb->piece);
+    score += other_eval(cb->piece, cb->piece_count);
 
     //score += castling_eval(cb); //A AJOUTER
 
