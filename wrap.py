@@ -30,7 +30,7 @@ def main():
     # On crée un plateau virtuel pour calculer le FEN actuel
     board = chess.Board()
     last_fen = board.fen()
-    proc = subprocess.Popen(["./engines/TIPEv6.exe"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+    proc = subprocess.Popen(["./TIPEv6.exe"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
                 
     while True:
         raw_line = sys.stdin.readline()
