@@ -41,6 +41,7 @@ et c'est tout :)
 #include "zobrist.h"
 #include "arrFrontSpans.h"
 #include "eval.h"
+#include "manhattan_dist.h"
 
 
 typedef uint64_t U64;

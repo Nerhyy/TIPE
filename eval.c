@@ -1,6 +1,6 @@
 
 #include "eval.h"
-
+#include "manhattan_dist.h"
 
 
 //CONSTANTE DE PLACEMENT POUR LES BLANCS___________________________________________________
@@ -74,17 +74,6 @@ const int w_king_place[64] = {
     20, 40, 10,  0,  0, 10, 40, 20
 };
 
-const int w_king_place_endgame[64] = {
-    -50,-40,-30,-20,-20,-30,-40,-50,
-    -30,-20,-10,  0,  0,-10,-20,-30,
-    -30,-10, 20, 30, 30, 20,-10,-30,
-    -30,-10, 30, 40, 40, 30,-10,-30,
-    -30,-10, 30, 40, 40, 30,-10,-30,
-    -30,-10, 20, 30, 30, 20,-10,-30,
-    -30,-30,  0,  0,  0,  0,-30,-30,
-    -50,-30,-30,-30,-30,-30,-30,-50
-};
-
 //CONSTANTE DE PLACEMENT POUR LES NOIRS___________________________________________________
 
 const int b_pawn_place[64] = {
@@ -155,17 +144,6 @@ const int b_king_place[64] = {
     -30,-40,-40,-50,-50,-40,-40,-30
 };
 
-const int b_king_place_endgame[64] = {
-    -50,-30,-30,-30,-30,-30,-30,-50,
-    -30,-30,  0,  0,  0,  0,-30,-30,
-    -30,-10, 20, 30, 30, 20,-10,-30,
-    -30,-10, 30, 40, 40, 30,-10,-30,
-    -30,-10, 30, 40, 40, 30,-10,-30,
-    -30,-10, 20, 30, 30, 20,-10,-30,
-    -30,-20,-10,  0,  0,-10,-20,-30,
-    -50,-40,-30,-20,-20,-30,-40,-50,
-};
-
 const int* all_placements[2][8] = {
     // ================= BLANCS =================
     [WHITE] = {
@@ -176,7 +154,6 @@ const int* all_placements[2][8] = {
         [ROOK]         = w_rook_place,
         [QUEEN]        = w_queen_place,
         [KING]         = w_king_place,
-        [7] = w_king_place_endgame, //KING ENDGAME
     },
 
     // ================= NOIRS ==================
@@ -188,7 +165,165 @@ const int* all_placements[2][8] = {
         [ROOK]         = b_rook_place,
         [QUEEN]        = b_queen_place,
         [KING]         = b_king_place,
-        [7] = b_king_place_endgame, //KING ENDGAME
+    }
+};
+
+
+//________________________________ ENDGAME ______________________________
+
+const int w_pawn_place_endgame[64] = {
+      0,  0,  0,  0,  0,  0,  0,  0,
+     80, 80, 80, 80, 80, 80, 80, 80,
+     50, 50, 50, 50, 50, 50, 50, 50,
+     30, 30, 30, 30, 30, 30, 30, 30,
+     20, 20, 20, 20, 20, 20, 20, 20,
+     10, 10, 10, 10, 10, 10, 10, 10,
+     10, 10, 10,-20,-20, 10, 10, 10,
+      0,  0,  0,  0,  0,  0,  0,  0
+};
+
+const int w_knight_place_endgame[64] = {
+    -50,-40,-30,-30,-30,-30,-40,-50,
+    -40,-20,  0,  5,  5,  0,-20,-40,
+    -30,  5, 10, 15, 15, 10,  5,-30,
+    -30,  5, 15, 20, 20, 15,  5,-30,
+    -30,  5, 15, 20, 20, 15,  5,-30,
+    -30,  5, 10, 15, 15, 10,  5,-30,
+    -40,-20,  0,  0,  0,  0,-20,-40,
+    -50,-40,-30,-30,-30,-30,-40,-50
+};
+
+const int w_bishop_place_endgame[64] = {
+    -20,-10,-10,-10,-10,-10,-10,-20,
+    -10,  0,  0,  0,  0,  0,  0,-10,
+    -10,  0,  5, 10, 10,  5,  0,-10,
+    -10,  5, 10, 10, 10, 10,  5,-10,
+    -10,  5, 10, 10, 10, 10,  5,-10,
+    -10,  0,  5, 10, 10,  5,  0,-10,
+    -10,  0,  0,  0,  0,  0,  0,-10,
+    -20,-10,-10,-10,-10,-10,-10,-20
+};
+
+const int w_rook_place_endgame[64] = {
+     20, 20, 20, 20, 20, 20, 20, 20,
+     50, 50, 50, 50, 50, 50, 50, 50,
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0
+};
+
+const int w_queen_place_endgame[64] = {
+    -20,-10,-10, -5, -5,-10,-10,-20,
+    -10,  0,  5,  5,  5,  5,  0,-10,
+    -10,  5, 10, 10, 10, 10,  5,-10,
+     -5,  5, 10, 15, 15, 10,  5, -5,
+     -5,  5, 10, 15, 15, 10,  5, -5,
+    -10,  5, 10, 10, 10, 10,  5,-10,
+    -10,  0,  5,  5,  5,  5,  0,-10,
+    -20,-10,-10, -5, -5,-10,-10,-20
+};
+
+const int w_king_place_endgame[64] = {
+    -50,-40,-30,-20,-20,-30,-40,-50,
+    -30,-20,-10,  0,  0,-10,-20,-30,
+    -30,-10, 20, 30, 30, 20,-10,-30,
+    -30,-10, 30, 40, 40, 30,-10,-30,
+    -30,-10, 30, 40, 40, 30,-10,-30,
+    -30,-10, 20, 30, 30, 20,-10,-30,
+    -30,-30,  0,  0,  0,  0,-30,-30,
+    -50,-30,-30,-30,-30,-30,-30,-50
+};
+
+const int b_pawn_place_endgame[64] = {
+      0,  0,  0,  0,  0,  0,  0,  0,
+     10, 10, 10,-20,-20, 10, 10, 10,
+     10, 10, 10, 10, 10, 10, 10, 10,
+     20, 20, 20, 20, 20, 20, 20, 20,
+     30, 30, 30, 30, 30, 30, 30, 30,
+     50, 50, 50, 50, 50, 50, 50, 50,
+     80, 80, 80, 80, 80, 80, 80, 80,
+      0,  0,  0,  0,  0,  0,  0,  0
+};
+
+const int b_knight_place_endgame[64] = {
+    -50,-40,-30,-30,-30,-30,-40,-50,
+    -40,-20,  0,  0,  0,  0,-20,-40,
+    -30,  5, 10, 15, 15, 10,  5,-30,
+    -30,  5, 15, 20, 20, 15,  5,-30,
+    -30,  5, 15, 20, 20, 15,  5,-30,
+    -30,  5, 10, 15, 15, 10,  5,-30,
+    -40,-20,  0,  5,  5,  0,-20,-40,
+    -50,-40,-30,-30,-30,-30,-40,-50
+};
+
+const int b_bishop_place_endgame[64] = {
+    -20,-10,-10,-10,-10,-10,-10,-20,
+    -10,  0,  0,  0,  0,  0,  0,-10,
+    -10,  0,  5, 10, 10,  5,  0,-10,
+    -10,  5, 10, 10, 10, 10,  5,-10,
+    -10,  5, 10, 10, 10, 10,  5,-10,
+    -10,  0,  5, 10, 10,  5,  0,-10,
+    -10,  0,  0,  0,  0,  0,  0,-10,
+    -20,-10,-10,-10,-10,-10,-10,-20
+};
+
+const int b_rook_place_endgame[64] = {
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,
+     50, 50, 50, 50, 50, 50, 50, 50,
+     20, 20, 20, 20, 20, 20, 20, 20
+};
+
+const int b_queen_place_endgame[64] = {
+    -20,-10,-10, -5, -5,-10,-10,-20,
+    -10,  0,  5,  5,  5,  5,  0,-10,
+    -10,  5, 10, 10, 10, 10,  5,-10,
+     -5,  5, 10, 15, 15, 10,  5, -5,
+     -5,  5, 10, 15, 15, 10,  5, -5,
+    -10,  5, 10, 10, 10, 10,  5,-10,
+    -10,  0,  5,  5,  5,  5,  0,-10,
+    -20,-10,-10, -5, -5,-10,-10,-20
+};
+
+const int b_king_place_endgame[64] = {
+    -50,-30,-30,-30,-30,-30,-30,-50,
+    -30,-30,  0,  0,  0,  0,-30,-30,
+    -30,-10, 20, 30, 30, 20,-10,-30,
+    -30,-10, 30, 40, 40, 30,-10,-30,
+    -30,-10, 30, 40, 40, 30,-10,-30,
+    -30,-10, 20, 30, 30, 20,-10,-30,
+    -30,-20,-10,  0,  0,-10,-20,-30,
+    -50,-40,-30,-20,-20,-30,-40,-50,
+};
+
+const int* all_placements_endgame[2][8] = {
+    // ================= BLANCS =================
+    [WHITE] = {
+        [0] = 0,
+        [PAWN]         = w_pawn_place_endgame,
+        [KNIGHT]       = w_knight_place_endgame,
+        [BISHOP]       = w_bishop_place_endgame,
+        [ROOK]         = w_rook_place_endgame,
+        [QUEEN]        = w_queen_place_endgame,
+        [KING]         = w_king_place_endgame,
+    },
+
+    // ================= NOIRS ==================
+    [BLACK] = {
+        [0] = 0,
+        [PAWN]         = b_pawn_place_endgame,
+        [KNIGHT]       = b_knight_place_endgame,
+        [BISHOP]       = b_bishop_place_endgame,
+        [ROOK]         = b_rook_place_endgame,
+        [QUEEN]        = b_queen_place_endgame,
+        [KING]         = b_king_place_endgame,
     }
 };
 
@@ -207,9 +342,57 @@ int piece_eval(U64 piece[2][7]){
 
             if(piece[WHITE][i] != 0){        //On check si le masque est vide (OPTIMISATION)
 
-                while(tempbitboard){       //Tant que le mask iter est dans la range de l'echiquier
+                while(tempbitboard){
                     int sq = __builtin_ctzll(tempbitboard);
                     score += piece_value[i] + all_placements[WHITE][i][sq];
+                    //printf("score [0][%d][%d] : %f", i, cur_sq ,score);
+                    tempbitboard &= (tempbitboard - 1);
+                }
+                 
+            }
+    
+        }
+
+        
+
+        //Heuristique matérielle pour les noirs
+        for(int i = 1; i < 7 ; i++){   //On itère sur les pièces
+
+            U64 tempbitboard = piece[BLACK][i];
+
+            if(piece[BLACK][i] != 0){        //On check si le masque est vide (OPTIMISATION)
+
+                while(tempbitboard){
+
+                    int sq = __builtin_ctzll(tempbitboard);
+                    score -= piece_value[i] + all_placements[BLACK][i][sq];
+                    //printf("score [1][%d][%d] : %f", i, cur_sq ,score);
+                    tempbitboard &= (tempbitboard - 1);
+
+                }
+
+            }
+    
+        }
+
+    return score;
+
+}
+
+int piece_eval_endgame(U64 piece[2][7]){
+
+    int score = 0; //Score calculé
+
+        //Heuristique matérielle pour les blancs
+        for(int i = 1; i < 7 ; i++){   //On itère sur les pièces
+
+            U64 tempbitboard = piece[WHITE][i];
+
+            if(piece[WHITE][i] != 0){        //On check si le masque est vide (OPTIMISATION)
+
+                while(tempbitboard){       //Tant que le mask iter est dans la range de l'echiquier
+                    int sq = __builtin_ctzll(tempbitboard);
+                    score += piece_value[i] + all_placements_endgame[WHITE][i][sq];
                     //printf("score [0][%d][%d] : %f", i, cur_sq ,score);
                     tempbitboard &= (tempbitboard - 1);
                 }
@@ -230,7 +413,7 @@ int piece_eval(U64 piece[2][7]){
                 while(tempbitboard){       //Tant que le mask iter est dans la range de l'echiquier
 
                     int sq = __builtin_ctzll(tempbitboard);
-                    score -= piece_value[i] + all_placements[BLACK][i][sq];
+                    score -= piece_value[i] + all_placements_endgame[BLACK][i][sq];
                     //printf("score [1][%d][%d] : %f", i, cur_sq ,score);
                     tempbitboard &= (tempbitboard - 1);
 
@@ -422,7 +605,7 @@ int passed_pawns(U64 piece[2][7]){ // A FACTORISER
     while(wpawns){
         int sq = __builtin_ctzll(wpawns);
         if((arrFrontSpans[WHITE][sq] & piece[BLACK][PAWN]) == 0){
-            score += 15; //A MODIFIER
+            score += 20; //A MODIFIER
         }
         wpawns &= (wpawns -1);
     }
@@ -430,7 +613,34 @@ int passed_pawns(U64 piece[2][7]){ // A FACTORISER
     while(bpawns){
         int sq = __builtin_ctzll(bpawns);
         if((arrFrontSpans[BLACK][sq] & piece[WHITE][PAWN]) == 0){
-            score -= 15; //A MODIFIER
+            score -= 20; //A MODIFIER
+        }
+        bpawns &= (bpawns -1);
+    }
+
+
+    return score;
+}
+
+int passed_pawns_endgame(U64 piece[2][7]){ // A FACTORISER
+
+    int score = 0;
+
+    U64 wpawns = piece[WHITE][PAWN];
+    U64 bpawns = piece[BLACK][PAWN];
+
+    while(wpawns){
+        int sq = __builtin_ctzll(wpawns);
+        if((arrFrontSpans[WHITE][sq] & piece[BLACK][PAWN]) == 0){
+            score += 40; //A MODIFIER
+        }
+        wpawns &= (wpawns -1);
+    }
+
+    while(bpawns){
+        int sq = __builtin_ctzll(bpawns);
+        if((arrFrontSpans[BLACK][sq] & piece[WHITE][PAWN]) == 0){
+            score -= 40; //A MODIFIER
         }
         bpawns &= (bpawns -1);
     }
@@ -441,7 +651,6 @@ int passed_pawns(U64 piece[2][7]){ // A FACTORISER
 
 
 
-
 int rook_on_7th(U64 piece[2][7]){
 
     int score = 0;
@@ -449,14 +658,14 @@ int rook_on_7th(U64 piece[2][7]){
     if(popCount(piece[WHITE][ROOK] & row7) == 2){ //Si deux tours sont sur la 7eme rangée
         score +=10;
         if((piece[BLACK][KING] & row8) != 0){ //Si le roi est sur la 8eme rangée
-            score += 15;
+            score += 20;
         }
     }
 
     if(popCount(piece[BLACK][ROOK] & row2) == 2){ //Si deux tours sont sur la 2eme rangée
         score -=10;
         if((piece[WHITE][KING] & row1) != 0){ //Si le roi est sur la 8eme rangée
-            score -= 15;
+            score -= 20;
         }
     }
 
@@ -595,6 +804,16 @@ int pawn_eval(U64 piece[2][7]){
     return score;
 }
 
+int pawn_eval_endgame(U64 piece[2][7]){
+    int score = 0;
+    score += isolated_pawns(piece);
+    score += double_pawns(piece);
+    score += passed_pawns_endgame(piece);
+    score += pawn_chain(piece);
+    
+    return score;
+}
+
 int other_eval(U64 piece[2][7], U64 piece_count[2][7]){
 
     int score =0;
@@ -627,7 +846,86 @@ int castling_eval(chessboard* cb){
     return score;
 }
 
-int eval(chessboard* cb){
+//Retourne la phase du jeu (24 c'est le début, 0 la fin)
+int get_game_phase(chessboard* cb){
+    
+    int phase = 0; //entre 0 à 24
+
+    phase += ((cb->piece_count[WHITE][KNIGHT])+(cb->piece_count[BLACK][KNIGHT]));
+    phase += ((cb->piece_count[WHITE][BISHOP])+(cb->piece_count[BLACK][BISHOP]));
+    phase += ((cb->piece_count[WHITE][ROOK])  +(cb->piece_count[BLACK][ROOK]))*2;
+    phase += ((cb->piece_count[WHITE][QUEEN]) +(cb->piece_count[BLACK][QUEEN]))*4;
+
+    return phase;
+}
+
+const int king_centre_dist[64] = {
+        6, 5, 4, 3, 3, 4, 5, 6,
+        5, 4, 3, 2, 2, 3, 4, 5,
+        4, 3, 1, 0, 0, 1, 3, 4,
+        3, 2, 0, 0, 0, 0, 2, 3,
+        3, 2, 0, 0, 0, 0, 2, 3,
+        4, 3, 1, 0, 0, 1, 3, 4,
+        5, 4, 3, 2, 2, 3, 4, 5,
+        6, 5, 4, 3, 3, 4, 5, 6
+};
+
+int white_material(chessboard* cb){
+    return cb->piece_count[WHITE][PAWN]*piece_value[PAWN]
+            + cb->piece_count[WHITE][KNIGHT]*piece_value[KNIGHT]
+            + cb->piece_count[WHITE][BISHOP]*piece_value[BISHOP]
+            + cb->piece_count[WHITE][ROOK]*piece_value[ROOK]
+            + cb->piece_count[WHITE][QUEEN]*piece_value[QUEEN];
+
+}
+
+int black_material(chessboard* cb){
+    return cb->piece_count[BLACK][PAWN]*piece_value[PAWN]
+            + cb->piece_count[BLACK][KNIGHT]*piece_value[KNIGHT]
+            + cb->piece_count[BLACK][BISHOP]*piece_value[BISHOP]
+            + cb->piece_count[BLACK][ROOK]*piece_value[ROOK]
+            + cb->piece_count[BLACK][QUEEN]*piece_value[QUEEN];
+
+}
+
+int material_advantage_is_huge(chessboard* cb){ // -1 pour None, 0 pour WHITE et 1 pour BLACK
+
+    int w_m = white_material(cb);
+    int b_m = black_material(cb);
+
+    int diff = w_m - b_m;
+
+    if((diff > 450) && (b_m < 400)){
+        return WHITE;
+    }
+
+    else if((diff < -450) && (w_m < 400)){
+        return BLACK;
+    }
+
+    else{
+        return -1;
+    }
+
+}
+
+int mop_up(U64 piece[2][7], int winning_side){
+
+    int score = 0;
+
+    int l_king_sq = deserialize(piece[!winning_side][KING]);
+    int w_king_sq = deserialize(piece[ winning_side][KING]);
+
+    //On veut ramener le roi losing vers les bords
+    score += king_centre_dist[l_king_sq]*10;
+
+    //On rapproche les rois
+    score += (14 - manhattan_dist[w_king_sq][l_king_sq])*5;
+
+    return score;
+}
+
+int eval_midgame(chessboard* cb){
 
     int score = 0;
    
@@ -639,5 +937,38 @@ int eval(chessboard* cb){
     //score += castling_eval(cb); //A AJOUTER
 
     return (cb->turn == WHITE) ? score : -score ;
+
+}
+
+int eval_endgame(chessboard* cb){
+
+    int score = 0;
+   
+    score += piece_eval_endgame(cb->piece);
+    score += mobility(cb->piece);
+    score += pawn_eval_endgame(cb->piece);
+    score += other_eval(cb->piece, cb->piece_count);
+
+
+    int maih = material_advantage_is_huge(cb); // -1 pour None, 0 pour WHITE et 1 pour BLACK
+    if(maih != -1){
+        int winning_side = maih;
+        score += mop_up(cb->piece, winning_side);
+    }
+
+    return (cb->turn == WHITE) ? score : -score ;
+
+}
+
+int eval(chessboard* cb){
+
+    int phase = cb->phase; //On récupère la phase entre 0 et 24
+
+    int score_mg = eval_midgame(cb); //Eval midgame
+    int score_eg = eval_endgame(cb); //Eval endgame
+
+    int final_score = ((score_mg*phase)+(score_eg*(24-phase)))/24; //On interpole
+
+    return (cb->turn == WHITE) ? final_score : -final_score;
 
 }
