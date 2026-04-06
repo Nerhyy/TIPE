@@ -311,13 +311,17 @@ void makeMove_capture_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
     lostdata->enPassantSquare = cb->enPassantSquare;
     cb->enPassantSquare = -1;
 
+    int other_turn = 1 - turn;
+
     cb->piece[turn][m.piece] &= ~from;   // On retire la piece
+    cb->piece_count[other_turn][m.captured]--;
+
     cb->piece[turn][m.piece] |= to;     //On pose la nouvelle piece sur la nouvelle case
 
     hash ^= zobrist_pieces[turn][m.piece][m.from];
     hash ^= zobrist_pieces[turn][m.piece][m.to];
 
-    int other_turn = 1 - turn;
+    
     // En cas de capture EN PASSANT________________________________________________________________________________
     if(m.flag == ENPASSANT){
 
@@ -356,6 +360,9 @@ void makeMove_capture_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
 
         hash ^= zobrist_pieces[turn][PAWN][m.to];
         hash ^= zobrist_pieces[turn][m.promo][m.to];
+
+        cb->piece_count[turn][PAWN]--;
+        cb->piece_count[turn][m.promo]++;
     }
     cb->hash = hash;
 }
@@ -410,6 +417,9 @@ void makeMove_default_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
 
         hash ^= zobrist_pieces[turn][PAWN][m.to];
         hash ^= zobrist_pieces[turn][m.promo][m.to];
+
+        cb->piece_count[turn][PAWN]--;
+        cb->piece_count[turn][m.promo]++;
     }
     cb->hash = hash;
 }
@@ -500,10 +510,13 @@ void unmakeMove(chessboard* cb, move m, ld* lostdata){ //FINIR DE DEBUG
         }
     }
     else if(m.captured != 0){ 
+        cb->piece_count[other_turn][m.captured]++;
         if(m.promo != 0){ 
             cb->piece[other_turn][m.promo] &= ~to;  
             cb->piece[other_turn][m.piece] |= from; 
             cb->piece[turn][m.captured] |= to; 
+            cb->piece_count[turn][PAWN]++; 
+            cb->piece_count[turn][m.promo]--;
         }
         else if(m.flag == ENPASSANT){
             cb->piece[other_turn][m.piece] &= ~to; 

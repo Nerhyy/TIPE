@@ -230,3 +230,11 @@ int deserialize(U64 sq){ //Deserialize un mask unitaire
     }
     return __builtin_ctzll(sq);
 }
+
+void init_piece_counts(chessboard* cb) {
+    for (int c = 0; c < 2; c++) {
+        for (int p = 1; p < 7; p++) { 
+            cb->piece_count[c][p] = popCount(cb->piece[c][p]);
+        }
+    }
+}
