@@ -962,13 +962,20 @@ int eval_endgame(chessboard* cb){
 
 int eval(chessboard* cb){
 
-    int phase = cb->phase; //On récupère la phase entre 0 et 24
 
-    int score_mg = eval_midgame(cb); //Eval midgame
-    int score_eg = eval_endgame(cb); //Eval endgame
+    if(cb->phase > 17){
+        int final_score = eval_midgame(cb); //Eval midgame
+        return (cb->turn == WHITE) ? final_score : -final_score;
+    }
+    else{
+        int phase = cb->phase; //On récupère la phase entre 0 et 24
 
-    int final_score = ((score_mg*phase)+(score_eg*(24-phase)))/24; //On interpole
+        int score_mg = eval_midgame(cb); //Eval midgame
+        int score_eg = eval_endgame(cb); //Eval endgame
 
-    return (cb->turn == WHITE) ? final_score : -final_score;
+        int final_score = ((score_mg*phase)+(score_eg*(24-phase)))/24; //On interpole
+
+        return (cb->turn == WHITE) ? final_score : -final_score;
+    }
 
 }
