@@ -345,6 +345,7 @@ int main(int argc, char* argv[]){
     fill_knightAttacks_table();
     fill_pawnAttacks_table();
     fill_arrFrontSpans();
+    fill_manhattan_distances();
     init_zobrist();
     init_tt();
 
