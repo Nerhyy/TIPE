@@ -936,7 +936,7 @@ int eval_midgame(chessboard* cb){
 
     //score += castling_eval(cb); //A AJOUTER
 
-    return (cb->turn == WHITE) ? score : -score ;
+    return score;
 
 }
 

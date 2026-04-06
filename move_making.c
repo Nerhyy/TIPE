@@ -549,7 +549,7 @@ void unmakeMove(chessboard* cb, move m, ld* lostdata){ //FINIR DE DEBUG
         }
     }
     else if(m.captured != 0){ 
-        cb->piece_count[other_turn][m.captured]++;
+        cb->piece_count[turn][m.captured]++;
 
         //On update la phase de jeu
         if(m.captured == KNIGHT){
@@ -569,8 +569,8 @@ void unmakeMove(chessboard* cb, move m, ld* lostdata){ //FINIR DE DEBUG
             cb->piece[other_turn][m.promo] &= ~to;  
             cb->piece[other_turn][m.piece] |= from; 
             cb->piece[turn][m.captured] |= to; 
-            cb->piece_count[turn][PAWN]++; 
-            cb->piece_count[turn][m.promo]--;
+            cb->piece_count[other_turn][PAWN]++; 
+            cb->piece_count[other_turn][m.promo]--;
 
             //On update la phase de jeu
             if(m.promo == KNIGHT){
@@ -604,6 +604,22 @@ void unmakeMove(chessboard* cb, move m, ld* lostdata){ //FINIR DE DEBUG
         if(m.promo != 0){ 
             cb->piece[other_turn][m.promo] &= ~to;
             cb->piece[other_turn][m.piece] |= from;   
+            cb->piece_count[other_turn][PAWN]++; 
+            cb->piece_count[other_turn][m.promo]--;
+            //On update la phase de jeu
+            if(m.promo == KNIGHT){
+                cb->phase--;
+            }
+            if(m.promo == BISHOP){
+                cb->phase--;
+            }
+            if(m.promo == ROOK){
+                cb->phase -= 2;
+            }
+            if(m.promo == QUEEN){
+                cb->phase -= 4;
+            }
+
         }
         else { 
             cb->piece[other_turn][m.piece] &= ~to; 
