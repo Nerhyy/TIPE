@@ -917,10 +917,10 @@ int mop_up(U64 piece[2][7], int winning_side){
     int w_king_sq = deserialize(piece[ winning_side][KING]);
 
     //On veut ramener le roi losing vers les bords
-    score += king_centre_dist[l_king_sq]*10;
+    score += king_centre_dist[l_king_sq]*45;
 
     //On rapproche les rois
-    score += (14 - manhattan_dist[w_king_sq][l_king_sq])*5;
+    score += (14 - manhattan_dist[w_king_sq][l_king_sq])*40;
 
     return score;
 }
@@ -952,8 +952,7 @@ int eval_endgame(chessboard* cb){
 
     int maih = material_advantage_is_huge(cb); // -1 pour None, 0 pour WHITE et 1 pour BLACK
     if(maih != -1){
-        int winning_side = maih;
-        score += mop_up(cb->piece, winning_side);
+        (maih == WHITE) ? (score += mop_up(cb->piece, maih)) : (score -= mop_up(cb->piece, maih));
     }
 
     return score;
