@@ -681,7 +681,7 @@ int doubled_rooks(U64 piece[2][7]){
         if(popCount(piece[WHITE][ROOK] & files[i]) >= 2){
             score+= 15;
         }
-        if(popCount(piece[WHITE][ROOK] & files[i]) >= 2){
+        if(popCount(piece[BLACK][ROOK] & files[i]) >= 2){
             score-= 15;
         }
     }
@@ -697,7 +697,7 @@ int mobility (U64 piece[2][7]){
     U64 b_p_attacks = bp_attacks_all(piece[BLACK][PAWN]);
 
     U64 all_w_pieces = whitePieces_p(piece);
-    U64 all_b_pieces = whitePieces_p(piece);
+    U64 all_b_pieces = blackPieces_p(piece);
 
     U64 occ = all_w_pieces | all_b_pieces;
 
@@ -956,7 +956,7 @@ int eval_endgame(chessboard* cb){
         score += mop_up(cb->piece, winning_side);
     }
 
-    return (cb->turn == WHITE) ? score : -score ;
+    return score;
 
 }
 
@@ -965,12 +965,12 @@ int eval(chessboard* cb){
     int phase = cb->phase; //On récupère la phase entre 0 et 24
 
     int score_mg = eval_midgame(cb); //Eval midgame
-    //int score_eg = eval_endgame(cb); //Eval endgame
+    int score_eg = eval_endgame(cb); //Eval endgame
 
-    //int final_score = ((score_mg*phase)+(score_eg*(24-phase)))/24; //On interpole
+    int final_score = ((score_mg*phase)+(score_eg*(24-phase)))/24; //On interpole
 
-    //return (cb->turn == WHITE) ? final_score : -final_score;
+    return (cb->turn == WHITE) ? final_score : -final_score;
 
-    return (cb->turn == WHITE) ? score_mg : -score_mg; //décommenter les trucs pour remettre l'endgame
+     //return (cb->turn == WHITE) ? score_mg : -score_mg; //décommenter les trucs pour remettre l'endgame
 
 }
