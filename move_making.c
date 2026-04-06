@@ -19,14 +19,7 @@
 #include "zobrist.h"
 
 
-int abs(int a){
-    if(a < 0){
-        return -a;
-    }
-    else{
-        return a;
-    }
-}
+
 
 void castling_rights(chessboard* cb, move m, U64 from_bitboard_unused){
     

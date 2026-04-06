@@ -15,7 +15,7 @@
 #include "king.h"
 #include "rectlookup.h"
 
-int abs(int a);
+
 void castling_rights(chessboard* cb, move m, U64 from);
 void promotion(chessboard* cb, move m, U64 to);
 void makeMove(chessboard* cb, move m);

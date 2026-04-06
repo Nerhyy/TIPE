@@ -510,7 +510,7 @@ int isolated_pawns(U64 piece[2][7]){ //A FACTORISER AVEC LES ROOKS ON OPEN FILES
 
 }
 
-int bishop_pair(U64 piece_count[2][7]){
+int bishop_pair(int piece_count[2][7]){
 
     int score = 0;
 
@@ -814,7 +814,7 @@ int pawn_eval_endgame(U64 piece[2][7]){
     return score;
 }
 
-int other_eval(U64 piece[2][7], U64 piece_count[2][7]){
+int other_eval(U64 piece[2][7], int piece_count[2][7]){
 
     int score =0;
 
