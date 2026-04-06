@@ -576,6 +576,13 @@ void makeMove_ld(chessboard* cb, move m, ld* lostdata){ //                     A
         printf("ALERTE BUG ZOBRIST ! Coup joué : de %d à %d\n", m.from, m.to);
         assert(cb->hash == verif_hash); // Fait crasher le programme volontairement
     }*/
+    // --- AUTRE TEST DE FOU ---
+    /*int verif_mg_score = piece_eval(cb->piece);
+    int verif_eg_score = piece_eval_endgame(cb->piece);
+    if(cb->eg_score != verif_eg_score || cb->mg_score != verif_mg_score){
+        printf("BUG SCORE");
+        assert(cb->eg_score == verif_eg_score && cb->mg_score == verif_mg_score);
+    */
 }
 
 
