@@ -62,6 +62,7 @@ const int mvv_lva_table[7][7] = {
 
 
 int quiescence(chessboard* cb, int alpha, int beta){
+    if (stop_search) return 0;
     int stand_pat = eval(cb);
     if(stand_pat >= beta){
         return beta;
@@ -92,7 +93,7 @@ int quiescence(chessboard* cb, int alpha, int beta){
     ld lostdata = create_lostdata2();
 
     for (int i = 0; i < l.count; i++) {
-
+        if (stop_search) return 0;
         //Tri
         int best_score_idx = i;
         for (int j = i + 1; j < l.count; j++) {
@@ -138,7 +139,7 @@ int quiescence(chessboard* cb, int alpha, int beta){
 }
 
 int negaMax(chessboard* cb, int depth, int alpha, int beta){
-
+    if (stop_search) return 0;
     int originalAlpha = alpha;
 
     int tt_score;
@@ -180,7 +181,7 @@ int negaMax(chessboard* cb, int depth, int alpha, int beta){
     int legal_moves_played = 0;
 
     for(int i = 0 ; i < l.count; i++){
-        
+        if (stop_search) return 0;
         //Tri
         int best_score_idx = i;
         for (int j = i + 1; j < l.count; j++) {
