@@ -4,6 +4,7 @@
 
 #include "globals.h"
 #include "cb_operators.h"
+#include "zobrist.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -529,7 +530,7 @@ chessboard* convert_FEN_to_cb(char FEN[92]){
 
     //printf("test : %d %d\n", cb->halfmoveclock, cb->fullmove);
 
-    
+    cb->hash = generate_hash(cb);
     
     return cb;
 }

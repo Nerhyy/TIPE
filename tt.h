@@ -7,11 +7,12 @@
 #define TT_SIZE 1048576
 
 typedef struct {
-    U64 zobrist_key; // La clé unique de la position
-    int depth;            // La profondeur à laquelle on l'a calculée
-    int score;            // L'évaluation
-    int flag;             // EXACT, LOWER_BOUND ou UPPER_BOUND
-    move best_move;
+    U64 zobrist_key;
+    move best_move;  
+
+    int score             : 22; 
+    unsigned int depth    : 8;  
+    unsigned int flag     : 2; 
 } TTEntry;
 
 extern TTEntry TT[TT_SIZE];

@@ -1,1 +1,1 @@
-gcc *.c -O3 -o TIPEv6.exe && cp TIPEv6.exe lichess/engines/
+gcc *.c -O3 -march=native -o TIPEv6.exe && cp TIPEv6.exe lichess/engines/

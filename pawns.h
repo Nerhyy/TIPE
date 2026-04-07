@@ -41,4 +41,21 @@ U64 bp_able2captures_east(U64 bpawns, U64 wpawns);
 U64 bp_able2captures_west(U64 bpawns, U64 wpawns);
 U64 bp_all_able2captures(U64 bpawns, U64 wpawns);
 
+U64 w_p_defended_from_west( U64 pawns);
+U64 w_p_defended_from_east( U64 pawns);
+U64 b_p_defended_from_west( U64 pawns);
+U64 b_p_defended_from_east( U64 pawns);
+
+U64 w_p_defenders_from_west(U64 wpawns);
+U64 w_p_defenders_from_east(U64 wpawns);
+U64 b_p_defenders_from_west(U64 bpawns);
+U64 b_p_defenders_from_east(U64 bpawns);
+
+U64 defended_defenders_west(U64 defended_west, U64 defenders_west);
+U64 defended_defenders_east(U64 defended_east, U64 defenders_east);
+U64 ndefended_defenders_west(U64 defended_west, U64 defenders_west);
+U64 ndefended_defenders_east(U64 defended_east, U64 defenders_east);
+U64 defended_ndefenders_west(U64 defended_west, U64 defenders_west);
+U64 defended_ndefenders_east(U64 defended_east, U64 defenders_east);
+
 void fill_pawnAttacks_table();

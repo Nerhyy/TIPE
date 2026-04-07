@@ -168,4 +168,82 @@ U64 bp_all_able2captures(U64 bpawns, U64 wpawns){ //les pions noirs qui peuvent 
 }
 
 
+//___________________ DEFENDED _____________________________
+//les pions blancs défendus par la droite
+U64 w_p_defended_from_west(U64 wpawns){
+    return (wpawns & wp_attacks_west(wpawns));
+}
 
+//les pions blancs défendus par la gauche
+U64 w_p_defended_from_east(U64 wpawns){
+    return (wpawns & wp_attacks_east(wpawns));
+}
+
+//les pions noirs défendus par la droite
+U64 b_p_defended_from_west(U64 bpawns){
+    return (bpawns & bp_attacks_west(bpawns));
+}
+
+//les pions noirs défendus par la gauche
+U64 b_p_defended_from_east(U64 bpawns){
+    return (bpawns & bp_attacks_east(bpawns));  
+}
+
+//___________________ DEFENDERS _____________________________
+//les pions blancs défendants vers la droite
+U64 w_p_defenders_from_west(U64 wpawns){
+    return (wpawns & bp_attacks_west(wpawns));
+}
+
+//les pions blancs défendants vers la gauche
+U64 w_p_defenders_from_east(U64 wpawns){
+    return (wpawns & bp_attacks_east(wpawns));
+}
+
+//les pions noirs défendants vers la droite
+U64 b_p_defenders_from_west(U64 bpawns){
+    return (bpawns & wp_attacks_west(bpawns));
+}
+
+//les pions noirs défendants vers la gauche
+U64 b_p_defenders_from_east(U64 bpawns){
+    return (bpawns & wp_attacks_east(bpawns));
+}
+
+//___________________ DEFENDED AND DEFENDERS _____________________________
+//L'appeler avec les attaques west
+//C'est les pions de milieu de chaine
+U64 defended_defenders_west(U64 defended_west, U64 defenders_west){
+    return (defended_west & defenders_west);
+}
+
+//L'appeler avec les attaques west
+//C'est les pions de milieu de chaine
+U64 defended_defenders_east(U64 defended_east, U64 defenders_east){
+    return (defended_east & defenders_east);
+}
+
+
+//___________________ NOT DEFENDED AND DEFENDERS _____________________________
+
+//La base des chaines de pions west
+U64 ndefended_defenders_west(U64 defended_west, U64 defenders_west){
+    return ((~defended_west) & (defenders_west));
+}
+
+//La base des chaines de pions east
+U64 ndefended_defenders_east(U64 defended_east, U64 defenders_east){
+    return ((~defended_east) & (defenders_east));
+}
+
+//___________________ DEFENDED AND NOT DEFENDERS _____________________________
+
+//La tip des chaines de pions west
+U64 defended_ndefenders_west(U64 defended_west, U64 defenders_west){
+    return ((defended_west) & (~defenders_west));
+}
+
+//La tip des chaines de pions east
+U64 defended_ndefenders_east(U64 defended_east, U64 defenders_east){
+    return ((defended_east) & (~defenders_east));
+}
