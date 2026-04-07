@@ -303,6 +303,7 @@ move findBestMove_IDS(chessboard* cb, int depth){
     int n_moves = l->count;
     //Recherche en profondeur du meilleur coup
     int* scores = malloc(sizeof(int) * l->count);
+    memset(scores, -1000000000, sizeof(int)*n_moves);
     for(int j = 1; j <= depth; j++){
         
         int bestScore = -1000000000;
@@ -315,6 +316,7 @@ move findBestMove_IDS(chessboard* cb, int depth){
         int score = -negaMax(&local_cb , j - 1, -beta, -alpha);
         unmakeMove(&local_cb, l->moves[0] ,  &local_lost);
         alpha = score;
+        scores[0] = score;
         #pragma omp parallel for
         for(int i = 1 ; i < l->count; i++){
             chessboard local_cb = *cb;
@@ -323,6 +325,9 @@ move findBestMove_IDS(chessboard* cb, int depth){
             int score = -negaMax(&local_cb , j - 1, -beta, -alpha);
             unmakeMove(&local_cb, l->moves[i] ,  &local_lost);
             scores[i] = score;
+            if( score > alpha){
+                alpha = score;
+            }
         }
         int i_max = 0;
         for (int i = 0; i < l->count; i++)
@@ -334,7 +339,6 @@ move findBestMove_IDS(chessboard* cb, int depth){
         }
         bestMoveForThisDepth = l->moves[i_max];
         bestMove = bestMoveForThisDepth;
-        //printf("score %d, depth %d \n", scores[i_max], j);
         //print_move(bestMove);
     }
     
