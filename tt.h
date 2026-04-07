@@ -4,7 +4,7 @@
 #define FLAG_LOWER_BOUND 1
 #define FLAG_UPPER_BOUND 2
 
-#define TT_SIZE 1048576
+#define TT_SIZE 33554432
 
 typedef struct {
     U64 zobrist_key;
