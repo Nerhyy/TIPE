@@ -347,11 +347,8 @@ move findBestMove_IDS_Thread(chessboard* cb, int depth, int thread_id){
     ld lostdata = {.castle = -1, .enPassantSquare = -1, .fullmove = -1, .halfmoveclock = -1};
     int n_moves = l->count;
     int start_depth = 1;
-
     if (thread_id != 0 && n_moves > 1) {
-
-        start_depth = (thread_id % 7) + 1; 
-
+    // On garde uniquement l'échange du premier coup pour la diversité
         int swap_idx = thread_id % n_moves;
         if (swap_idx != 0) {
             move temp = l->moves[0];
@@ -440,6 +437,7 @@ int main(int argc, char* argv[]){
         }
         print_move(global_best_move);
         fflush(stdout);
+        current_age++;
         running = false;
     }
     //printf("hit :%d\n" , count);

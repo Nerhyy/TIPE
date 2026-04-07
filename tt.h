@@ -16,10 +16,12 @@ typedef struct {
     int score             : 22; 
     unsigned int depth    : 8;  
     unsigned int flag     : 2; 
+    int age;
 } TTEntry;
 
 extern TTEntry TT[TT_SIZE];
-extern omp_lock_t TT_locks[TT_SIZE];
+//extern omp_lock_t TT_locks[TT_SIZE];
+extern int current_age;
 
 void init_tt();
 void clear_tt();
