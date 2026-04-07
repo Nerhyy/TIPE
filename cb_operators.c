@@ -230,3 +230,25 @@ int deserialize(U64 sq){ //Deserialize un mask unitaire
     }
     return __builtin_ctzll(sq);
 }
+
+void init_piece_counts(chessboard* cb) {
+    cb->phase = 0;
+    for (int c = 0; c < 2; c++) {
+        for (int p = 1; p < 7; p++) { 
+            cb->piece_count[c][p] = popCount(cb->piece[c][p]);
+
+            if(p == KNIGHT){
+                cb->phase += cb->piece_count[c][p];
+            }
+            else if(p == BISHOP){
+                cb->phase += cb->piece_count[c][p];
+            }
+            else if(p == ROOK){
+                cb->phase += cb->piece_count[c][p]*2;
+            }
+            else if(p == QUEEN){
+                cb->phase += cb->piece_count[c][p]*4;
+            }
+        }
+    }
+}

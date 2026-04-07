@@ -41,6 +41,7 @@ et c'est tout :)
 #include "zobrist.h"
 #include "arrFrontSpans.h"
 #include "eval.h"
+#include "manhattan_dist.h"
 
 
 typedef uint64_t U64;
@@ -344,11 +345,12 @@ int main(int argc, char* argv[]){
     fill_knightAttacks_table();
     fill_pawnAttacks_table();
     fill_arrFrontSpans();
+    fill_manhattan_distances();
     init_zobrist();
     init_tt();
 
 
-    char FEN[92] ;
+    char FEN[92];
     bool running = true;
     while (running)
     {
@@ -357,6 +359,7 @@ int main(int argc, char* argv[]){
         chessboard *cb = convert_FEN_to_cb(FEN);
         print_move(findBestMove_IDS(cb, 8));
         fflush(stdout);
+        current_age++;
         //running = false;
     }
     //printf("hit :%d\n" , count);

@@ -14,7 +14,8 @@ typedef uint64_t U64;
 typedef struct echiquier{
 
     U64 piece[2][7]; //piece[COLOR][TYPE] et la case 0 sert à rien
-
+    int piece_count[2][7];
+    int phase;
     int turn; //A qui de jouer
 
     int castle; // 0000 les deux premiers bits sont les blancs pour castle left et right, les deux autres pour les noirs
@@ -25,6 +26,8 @@ typedef struct echiquier{
     
     U64 hash;
 
+    int eg_score;
+    int mg_score;
 }chessboard;
 
 enum enumSquare { //serialized index for squares
@@ -159,6 +162,9 @@ typedef struct{
     int fullmove;
 
     U64 hash;
+
+    int eg_score;
+    int mg_score;
 }ld; //Pour le unmake move
 
 /////////////////////////////////////////// VARIABLES GLOBALES //////////////////////////////////////////

@@ -29,3 +29,5 @@ U64 takenSquares_p(U64 piece[2][7]);
 
 U64 whitePieces_p(U64 piece[2][7]);
 U64 blackPieces_p(U64 piece[2][7]);
+
+void init_piece_counts(chessboard* cb);

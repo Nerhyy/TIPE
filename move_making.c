@@ -19,14 +19,7 @@
 #include "zobrist.h"
 
 
-int abs(int a){
-    if(a < 0){
-        return -a;
-    }
-    else{
-        return a;
-    }
-}
+
 
 void castling_rights(chessboard* cb, move m, U64 from_bitboard_unused){
     
@@ -254,11 +247,21 @@ void reset_lostdata(ld* lostdata){
 void makeMove_castle_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
 {
     int turn = cb->turn;
+    int sign = (turn == WHITE) ? 1 : -1;
+
+    lostdata->mg_score = cb->mg_score;
+    lostdata->eg_score = cb->eg_score;
     
     lostdata->castle = cb->castle;
     lostdata->enPassantSquare = cb->enPassantSquare;
     lostdata->halfmoveclock = cb->halfmoveclock;
     lostdata->fullmove = cb->fullmove;
+
+    cb->mg_score -= sign * all_placements[turn][KING][m.from];
+    cb->eg_score -= sign * all_placements_endgame[turn][KING][m.from];
+    
+    cb->mg_score += sign * all_placements[turn][KING][m.to];
+    cb->eg_score += sign * all_placements_endgame[turn][KING][m.to];
 
     cb->piece[turn][KING] &= ~from;   // On retire la piece
     cb->piece[turn][KING] |= to;     //On pose la nouvelle piece sur la nouvelle case
@@ -271,12 +274,22 @@ void makeMove_castle_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
             cb->piece[turn][ROOK] |= 0x0000000000000008;
             cb->hash ^= zobrist_pieces[WHITE][ROOK][a1];
             cb->hash ^= zobrist_pieces[WHITE][ROOK][d1];
+
+            cb->mg_score -= sign * all_placements[WHITE][ROOK][a1];
+            cb->eg_score -= sign * all_placements_endgame[WHITE][ROOK][a1];
+            cb->mg_score += sign * all_placements[WHITE][ROOK][d1];
+            cb->eg_score += sign * all_placements_endgame[WHITE][ROOK][d1];
         }
         if(m.to == g1){
             cb->piece[turn][ROOK] &= ~0x0000000000000080;
             cb->piece[turn][ROOK] |= 0x0000000000000020;
             cb->hash ^= zobrist_pieces[WHITE][ROOK][h1];
             cb->hash ^= zobrist_pieces[WHITE][ROOK][f1];
+
+            cb->mg_score -= sign * all_placements[WHITE][ROOK][h1];
+            cb->eg_score -= sign * all_placements_endgame[WHITE][ROOK][h1];
+            cb->mg_score += sign * all_placements[WHITE][ROOK][f1];
+            cb->eg_score += sign * all_placements_endgame[WHITE][ROOK][f1];
         }
         cb->castle &= 0b0011; //On retire les droits de roque
     }
@@ -286,12 +299,22 @@ void makeMove_castle_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
             cb->piece[turn][ROOK] |= 0x0800000000000000;
             cb->hash ^= zobrist_pieces[BLACK][ROOK][a8];
             cb->hash ^= zobrist_pieces[BLACK][ROOK][d8];
+
+            cb->mg_score -= sign * all_placements[BLACK][ROOK][a8];
+            cb->eg_score -= sign * all_placements_endgame[BLACK][ROOK][a8];
+            cb->mg_score += sign * all_placements[BLACK][ROOK][d8];
+            cb->eg_score += sign * all_placements_endgame[BLACK][ROOK][d8];
         }
         if(m.to == g8){
             cb->piece[turn][ROOK] &= ~0x8000000000000000;
             cb->piece[turn][ROOK] |= 0x2000000000000000;
             cb->hash ^= zobrist_pieces[BLACK][ROOK][h8];
             cb->hash ^= zobrist_pieces[BLACK][ROOK][f8];
+
+            cb->mg_score -= sign * all_placements[BLACK][ROOK][h8];
+            cb->eg_score -= sign * all_placements_endgame[BLACK][ROOK][h8];
+            cb->mg_score += sign * all_placements[BLACK][ROOK][f8];
+            cb->eg_score += sign * all_placements_endgame[BLACK][ROOK][f8];
         }
         cb->castle &= 0b1100; //On retire les droits de roque
     }
@@ -308,17 +331,50 @@ void makeMove_capture_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
 {
     int turn = cb->turn;
     U64 hash = cb->hash;
+
+    lostdata->mg_score = cb->mg_score;
+    lostdata->eg_score = cb->eg_score;
+
     lostdata->enPassantSquare = cb->enPassantSquare;
     cb->enPassantSquare = -1;
 
+
+    int other_turn = 1 - turn;
+    int sign = (turn == WHITE) ? 1 : -1;
+
+    cb->mg_score -= sign * all_placements[turn][m.piece][m.from];
+    cb->eg_score -= sign * all_placements_endgame[turn][m.piece][m.from];
+    
+    cb->mg_score += sign * all_placements[turn][m.piece][m.to];
+    cb->eg_score += sign * all_placements_endgame[turn][m.piece][m.to];
+
     cb->piece[turn][m.piece] &= ~from;   // On retire la piece
+
+    //On update la phase de jeu
+    if(m.captured == KNIGHT){
+        cb->phase--;
+    }
+    if(m.captured == BISHOP){
+        cb->phase--;
+    }
+    if(m.captured == ROOK){
+        cb->phase -= 2;
+    }
+    if(m.captured == QUEEN){
+        cb->phase -= 4;
+    }
+
+    //On update le piece count
+    cb->piece_count[other_turn][m.captured]--;
+
     cb->piece[turn][m.piece] |= to;     //On pose la nouvelle piece sur la nouvelle case
 
     hash ^= zobrist_pieces[turn][m.piece][m.from];
     hash ^= zobrist_pieces[turn][m.piece][m.to];
 
-    int other_turn = 1 - turn;
+    
     // En cas de capture EN PASSANT________________________________________________________________________________
+    int cap_sq = m.to;
     if(m.flag == ENPASSANT){
 
 
@@ -326,10 +382,12 @@ void makeMove_capture_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
         if(turn == WHITE){
             cb->piece[other_turn][m.captured] &= ~(to >> 8); //On enleve la piece capturée                              A VERIFIER
             hash ^= zobrist_pieces[other_turn][PAWN][m.to - 8];
+            cap_sq = m.to - 8;
         }
         if(turn == BLACK){
             cb->piece[other_turn][m.captured] &= ~(to << 8); //On enleve la piece capturée                              A VERIFIER
             hash ^= zobrist_pieces[other_turn][PAWN][m.to + 8];
+            cap_sq = m.to + 8;
         }
         
     }
@@ -337,6 +395,10 @@ void makeMove_capture_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
         cb->piece[other_turn][m.captured] &= ~to; //On enleve la piece capturée
         hash ^= zobrist_pieces[other_turn][m.captured][m.to];
     }
+
+    cb->mg_score += sign * (piece_value[m.captured] + all_placements[other_turn][m.captured][cap_sq]);
+    cb->eg_score += sign * (piece_value[m.captured] + all_placements_endgame[other_turn][m.captured][cap_sq]);
+
     lostdata->fullmove = cb->fullmove;
     if(other_turn == WHITE){ //la clock des coups
         
@@ -356,6 +418,31 @@ void makeMove_capture_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
 
         hash ^= zobrist_pieces[turn][PAWN][m.to];
         hash ^= zobrist_pieces[turn][m.promo][m.to];
+
+        cb->piece_count[turn][PAWN]--;
+        cb->piece_count[turn][m.promo]++;
+
+        cb->mg_score -= sign * (piece_value[PAWN] + all_placements[turn][PAWN][m.to]);
+        cb->eg_score -= sign * (piece_value[PAWN] + all_placements_endgame[turn][PAWN][m.to]);
+        
+        cb->mg_score += sign * (piece_value[m.promo] + all_placements[turn][m.promo][m.to]);
+        cb->eg_score += sign * (piece_value[m.promo] + all_placements_endgame[turn][m.promo][m.to]);
+
+        //On update la phase de jeu
+        if(m.promo == KNIGHT){
+            cb->phase++;
+        }
+        if(m.promo == BISHOP){
+            cb->phase++;
+        }
+        if(m.promo == ROOK){
+            cb->phase += 2;
+        }
+        if(m.promo == QUEEN){
+            cb->phase += 4;
+        }
+
+
     }
     cb->hash = hash;
 }
@@ -364,13 +451,28 @@ void makeMove_default_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
 {
     int turn = cb->turn;
     U64 hash = cb->hash;
+
+    lostdata->mg_score = cb->mg_score;
+    lostdata->eg_score = cb->eg_score;
+
+    lostdata->fullmove = cb->fullmove;
+
+    int sign = (turn == WHITE) ? 1 : -1;
+
+    cb->mg_score -= sign * all_placements[turn][m.piece][m.from];
+    cb->eg_score -= sign * all_placements_endgame[turn][m.piece][m.from];
+
+    cb->mg_score += sign * all_placements[turn][m.piece][m.to];
+    cb->eg_score += sign * all_placements_endgame[turn][m.piece][m.to];
+
     cb->piece[turn][m.piece] &= ~from; // On retire la piece
     cb->piece[turn][m.piece] |= to;   //On pose la nouvelle piece sur la nouvelle case
+
 
     hash ^= zobrist_pieces[turn][m.piece][m.from];
     hash ^= zobrist_pieces[turn][m.piece][m.to];
 
-    lostdata->fullmove = cb->fullmove;
+    
     if(!turn){ //la clock des coups
         
         cb->fullmove += 1; 
@@ -410,6 +512,29 @@ void makeMove_default_ld(chessboard* cb, move m, ld* lostdata, U64 from, U64 to)
 
         hash ^= zobrist_pieces[turn][PAWN][m.to];
         hash ^= zobrist_pieces[turn][m.promo][m.to];
+
+        cb->piece_count[turn][PAWN]--;
+        cb->piece_count[turn][m.promo]++;
+
+        cb->mg_score -= sign * (piece_value[PAWN]  + all_placements[turn][PAWN][m.to]);
+        cb->eg_score -= sign * (piece_value[PAWN] + all_placements_endgame[turn][PAWN][m.to]);
+
+        cb->mg_score += sign * (piece_value[m.promo] + all_placements[turn][m.promo][m.to]);
+        cb->eg_score += sign * (piece_value[m.promo] + all_placements_endgame[turn][m.promo][m.to]);
+
+        //On update la phase de jeu
+        if(m.promo == KNIGHT){
+            cb->phase++;
+        }
+        if(m.promo == BISHOP){
+            cb->phase++;
+        }
+        if(m.promo == ROOK){
+            cb->phase += 2;
+        }
+        if(m.promo == QUEEN){
+            cb->phase += 4;
+        }
     }
     cb->hash = hash;
 }
@@ -451,6 +576,13 @@ void makeMove_ld(chessboard* cb, move m, ld* lostdata){ //                     A
         printf("ALERTE BUG ZOBRIST ! Coup joué : de %d à %d\n", m.from, m.to);
         assert(cb->hash == verif_hash); // Fait crasher le programme volontairement
     }*/
+    // --- AUTRE TEST DE FOU ---
+    /*int verif_mg_score = piece_eval(cb->piece);
+    int verif_eg_score = piece_eval_endgame(cb->piece);
+    if(cb->eg_score != verif_eg_score || cb->mg_score != verif_mg_score){
+        printf("BUG SCORE");
+        assert(cb->eg_score == verif_eg_score && cb->mg_score == verif_mg_score);
+    */
 }
 
 
@@ -500,10 +632,44 @@ void unmakeMove(chessboard* cb, move m, ld* lostdata){ //FINIR DE DEBUG
         }
     }
     else if(m.captured != 0){ 
+        cb->piece_count[turn][m.captured]++;
+
+        //On update la phase de jeu
+        if(m.captured == KNIGHT){
+            cb->phase++;
+        }
+        if(m.captured == BISHOP){
+            cb->phase++;
+        }
+        if(m.captured == ROOK){
+            cb->phase += 2;
+        }
+        if(m.captured == QUEEN){
+            cb->phase += 4;
+        }
+
         if(m.promo != 0){ 
             cb->piece[other_turn][m.promo] &= ~to;  
             cb->piece[other_turn][m.piece] |= from; 
             cb->piece[turn][m.captured] |= to; 
+            cb->piece_count[other_turn][PAWN]++; 
+            cb->piece_count[other_turn][m.promo]--;
+
+            //On update la phase de jeu
+            if(m.promo == KNIGHT){
+                cb->phase--;
+            }
+            if(m.promo == BISHOP){
+                cb->phase--;
+            }
+            if(m.promo == ROOK){
+                cb->phase -= 2;
+            }
+            if(m.promo == QUEEN){
+                cb->phase -= 4;
+            }
+
+            
         }
         else if(m.flag == ENPASSANT){
             cb->piece[other_turn][m.piece] &= ~to; 
@@ -521,6 +687,22 @@ void unmakeMove(chessboard* cb, move m, ld* lostdata){ //FINIR DE DEBUG
         if(m.promo != 0){ 
             cb->piece[other_turn][m.promo] &= ~to;
             cb->piece[other_turn][m.piece] |= from;   
+            cb->piece_count[other_turn][PAWN]++; 
+            cb->piece_count[other_turn][m.promo]--;
+            //On update la phase de jeu
+            if(m.promo == KNIGHT){
+                cb->phase--;
+            }
+            if(m.promo == BISHOP){
+                cb->phase--;
+            }
+            if(m.promo == ROOK){
+                cb->phase -= 2;
+            }
+            if(m.promo == QUEEN){
+                cb->phase -= 4;
+            }
+
         }
         else { 
             cb->piece[other_turn][m.piece] &= ~to; 
@@ -536,6 +718,9 @@ void unmakeMove(chessboard* cb, move m, ld* lostdata){ //FINIR DE DEBUG
     cb->hash            = lostdata->hash; 
 
     cb->turn = other_turn; 
+
+    cb->mg_score = lostdata->mg_score;
+    cb->eg_score = lostdata->eg_score;
 }
 
 //true  -> legal move
