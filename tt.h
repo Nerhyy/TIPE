@@ -1,10 +1,13 @@
 #include "globals.h"
+#include <omp.h>
+
 
 #define FLAG_EXACT 0
 #define FLAG_LOWER_BOUND 1
 #define FLAG_UPPER_BOUND 2
 
 #define TT_SIZE 1048576
+
 
 typedef struct {
     U64 zobrist_key;
@@ -16,6 +19,7 @@ typedef struct {
 } TTEntry;
 
 extern TTEntry TT[TT_SIZE];
+extern omp_lock_t TT_locks[TT_SIZE];
 
 void init_tt();
 void clear_tt();

@@ -24,6 +24,7 @@ et c'est tout :)
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <omp.h>
 
 #include "pawns.h"
 #include "knights.h"
@@ -42,6 +43,8 @@ et c'est tout :)
 #include "arrFrontSpans.h"
 #include "eval.h"
 #include "manhattan_dist.h"
+
+volatile bool stop_search = false;
 
 
 typedef uint64_t U64;
@@ -334,6 +337,51 @@ move findBestMove_IDS(chessboard* cb, int depth){
 
 }
 
+move findBestMove_IDS_Thread(chessboard* cb, int depth){
+
+    move bestMove = {0,0,0,0,0,0};
+    cb->hash = generate_hash(cb);
+
+    moveList* l = legalMoveList(cb);
+    ld lostdata = {.castle = -1, .enPassantSquare = -1, .fullmove = -1, .halfmoveclock = -1};
+    int n_moves = l->count;
+    //Recherche en profondeur du meilleur coup
+    for(int j = 1; j <= depth; j++){
+        
+        int bestScore = -1000000000;
+        int alpha = -1000000000;
+        int beta  =  1000000000;
+        move bestMoveForThisDepth = {0,0,0,0,0,0};
+
+        for(int i = 0 ; i < n_moves; i++){
+            if (stop_search) break;
+
+            move current_move = l->moves[i];
+            
+            makeMove_ld(cb,  current_move, &lostdata);
+            //Calcul en profondeur
+            int score = -negaMax(cb , j - 1, -beta, -alpha);
+
+            unmakeMove(cb, current_move, &lostdata);
+            
+            //Attribution du meilleur score
+            if(score > bestScore){
+                bestScore = score;
+                bestMoveForThisDepth = current_move;
+            }
+
+            if( score > alpha){
+                alpha = score;
+            }
+
+        }
+        bestMove = bestMoveForThisDepth;
+    }
+    free_moveList(l);
+    return bestMove;
+
+}
+
 
 //////////////////////////////////////////////////// MAIN /////////////////////////////////////////////////////
 
@@ -355,9 +403,28 @@ int main(int argc, char* argv[]){
     while (running)
     {
         //printf("From chess engine: Waiting for a fen\n");
+
         fgets(FEN, sizeof(FEN), stdin);
         chessboard *cb = convert_FEN_to_cb(FEN);
-        print_move(findBestMove_IDS(cb, 8));
+        move global_best_move = {0};
+        stop_search = false;
+        #pragma omp parallel num_threads(8)
+        {
+            int thread_id = omp_get_thread_num();
+
+            chessboard local_cb = *cb;
+            if (thread_id == 0) {
+
+                global_best_move = findBestMove_IDS_Thread(&local_cb, 8);
+        
+                stop_search = true; 
+            }
+            else {
+                findBestMove_IDS_Thread(&local_cb,100);
+            }
+
+        }
+        print_move(global_best_move);
         fflush(stdout);
         //running = false;
     }
