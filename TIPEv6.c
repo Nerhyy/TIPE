@@ -360,7 +360,7 @@ move findBestMove_IDS_Thread(chessboard* cb, int depth, int thread_id){
         }
     }
     //Recherche en profondeur du meilleur coup
-    for(int j = 1; j <= depth; j++){
+    for(int j = start_depth; j <= depth; j++){
         
         int bestScore = -1000000000;
         int alpha = -1000000000;

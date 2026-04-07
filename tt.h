@@ -19,7 +19,7 @@ typedef struct {
 } TTEntry;
 
 extern TTEntry TT[TT_SIZE];
-//extern omp_lock_t TT_locks[TT_SIZE];
+extern omp_lock_t TT_locks[TT_SIZE];
 
 void init_tt();
 void clear_tt();
