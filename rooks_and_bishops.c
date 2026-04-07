@@ -159,7 +159,7 @@ const unsigned int magicmoves_r_shift[64]=
 53, 54, 54, 54, 54, 54, 54, 53,
 53, 54, 54, 54, 54, 54, 54, 53,
 53, 54, 54, 54, 54, 54, 54, 53,
-52, 54, 54, 53, 53, 53, 53, 52 //j'ai modifié le 52 ici, c'était un 53
+52, 53, 53, 53, 53, 53, 53, 52 //j'ai modifié le 52 ici, c'était un 53
 };
 
 const unsigned int magicmoves_b_shift[64]=
