@@ -338,7 +338,7 @@ move findBestMove_IDS(chessboard* cb, int depth){
 
 }
 
-move findBestMove_IDS_Thread(chessboard* cb, int depth){
+move findBestMove_IDS_Thread(chessboard* cb, int depth, int thread_id){
 
     move bestMove = {0,0,0,0,0,0};
     cb->hash = generate_hash(cb);
@@ -346,6 +346,19 @@ move findBestMove_IDS_Thread(chessboard* cb, int depth){
     moveList* l = legalMoveList(cb);
     ld lostdata = {.castle = -1, .enPassantSquare = -1, .fullmove = -1, .halfmoveclock = -1};
     int n_moves = l->count;
+    int start_depth = 1;
+
+    if (thread_id != 0 && n_moves > 1) {
+
+        start_depth = (thread_id % 7) + 1; 
+
+        int swap_idx = thread_id % n_moves;
+        if (swap_idx != 0) {
+            move temp = l->moves[0];
+            l->moves[0] = l->moves[swap_idx];
+            l->moves[swap_idx] = temp;
+        }
+    }
     //Recherche en profondeur du meilleur coup
     for(int j = 1; j <= depth; j++){
         
@@ -399,13 +412,13 @@ int main(int argc, char* argv[]){
     init_tt();
 
 
-    char FEN[92] ;
+    char FEN[92] = "r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P1Q1/2N5/PPPP1PPP/R1B1K1NR b KQkq - 5 4";
     bool running = true;
     while (running)
     {
         //printf("From chess engine: Waiting for a fen\n");
 
-        fgets(FEN, sizeof(FEN), stdin);
+        //fgets(FEN, sizeof(FEN), stdin);
         chessboard *cb = convert_FEN_to_cb(FEN);
         move global_best_move = {0};
         stop_search = false;
@@ -416,18 +429,18 @@ int main(int argc, char* argv[]){
             chessboard local_cb = *cb;
             if (thread_id == 0) {
 
-                global_best_move = findBestMove_IDS_Thread(&local_cb, 8);
+                global_best_move = findBestMove_IDS_Thread(&local_cb, 8,thread_id);
         
                 stop_search = true; 
             }
             else {
-                findBestMove_IDS_Thread(&local_cb,100);
+                findBestMove_IDS_Thread(&local_cb,100,thread_id);
             }
 
         }
         print_move(global_best_move);
         fflush(stdout);
-        //running = false;
+        running = false;
     }
     //printf("hit :%d\n" , count);
     return 0;
