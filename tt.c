@@ -3,6 +3,7 @@
 
 TTEntry TT[TT_SIZE];
 
+int current_age = 0;
 
 void init_tt() {
     clear_tt();
@@ -42,6 +43,16 @@ void store_tt(U64 hash, int depth, int score, int originalAlpha, int beta, move 
     int tt_index = hash % TT_SIZE;
     TTEntry* tte = &TT[tt_index];
 
+    if (tte->zobrist_key != hash) {
+        if (tte->age == current_age && tte->depth > depth) {
+            return; 
+        }
+    } else {
+        if (tte->depth > depth) {
+            return; 
+        }
+    }
+
     int flag;
     if (score <= originalAlpha) {
         flag = FLAG_UPPER_BOUND;
@@ -56,4 +67,5 @@ void store_tt(U64 hash, int depth, int score, int originalAlpha, int beta, move 
     tte->score = score;
     tte->flag = flag;
     tte->best_move = best_move;
+    tte->age =current_age;
 }
