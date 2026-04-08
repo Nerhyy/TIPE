@@ -32,7 +32,7 @@ void addMove(moveList* list, int from, int to, int piece, int captured, int prom
 }
 
 
-moveList* generatePawnMoves(chessboard* cb, moveList* list){
+void generatePawnMoves(chessboard* cb, moveList* list){
 
     if(cb->turn == WHITE){
 
@@ -134,8 +134,6 @@ moveList* generatePawnMoves(chessboard* cb, moveList* list){
 
 
 
-    return list;
-
     }
 
 
@@ -229,7 +227,6 @@ moveList* generatePawnMoves(chessboard* cb, moveList* list){
         addMove(list, from, to, PAWN, EMPTY, EMPTY, NORMAL);
     }
 
-    return list;
 
     }
 
@@ -255,7 +252,7 @@ void addMove_bitboard(chessboard* cb, moveList* list, int sq, U64 moves, int pie
     }
 }
 
-moveList* generateSlidingMoves(chessboard* cb, moveList* l){
+void generateSlidingMoves(chessboard* cb, moveList* l){
 
     U64 occ = takenSquares(cb);
 
@@ -287,11 +284,9 @@ moveList* generateSlidingMoves(chessboard* cb, moveList* l){
         U64 attacks = (bishopAttacks(occ, sq) | rookAttacks(occ, sq)) & ~ownpieces;
         addMove_bitboard(cb, l, sq, attacks, QUEEN);
     }
-
-    return l;
 }
 //modifié
-moveList* generateKnightMoves(chessboard* cb, moveList*l)
+void generateKnightMoves(chessboard* cb, moveList*l)
 {
     U64 w_p = whitePieces(cb);
     U64 b_p = blackPieces(cb);
@@ -305,7 +300,7 @@ moveList* generateKnightMoves(chessboard* cb, moveList*l)
     }
 }
 //modifié
-moveList* generateKingMoves(chessboard* cb, moveList*l)
+void generateKingMoves(chessboard* cb, moveList*l)
 {
     U64 w_p = whitePieces(cb);
     U64 b_p = blackPieces(cb);
@@ -334,7 +329,7 @@ moveList* generateKingMoves(chessboard* cb, moveList*l)
 
 
 //modifié
-moveList* generateMoves(chessboard* cb, moveList* l){
+void generateMoves(chessboard* cb, moveList* l){
 
 
     //Cavaliers_________________________________________________________________________________________________
@@ -352,10 +347,6 @@ moveList* generateMoves(chessboard* cb, moveList* l){
     //Pions_____________________________________________________________________________________________________
 
     generatePawnMoves(cb, l);
-    
-
-    return l;
-
 }
 
 void affiche_moveList(moveList* l){
@@ -375,4 +366,176 @@ void affiche_moveList(moveList* l){
             i++;
         }
     }
+}
+
+void generateKnightCaptures(chessboard* cb, moveList* l) {
+    U64 enemypieces = (cb->turn == WHITE) ? blackPieces(cb) : whitePieces(cb);
+    U64 knights = (cb->turn == WHITE) ? cb->piece[WHITE][KNIGHT] : cb->piece[BLACK][KNIGHT];
+
+    while(knights){
+        int sq = popLSB(&knights);
+        U64 moves = knightAttacks[sq] & enemypieces; 
+        addMove_bitboard(cb, l, sq, moves, KNIGHT);
+    }
+}
+
+void generateKingCaptures(chessboard* cb, moveList* l) {
+    U64 enemypieces = (cb->turn == WHITE) ? blackPieces(cb) : whitePieces(cb);
+    
+    if(cb->turn == WHITE){
+        int sqk = bitScanForward(cb->piece[WHITE][KING]);
+        U64 moves = kingAttacks[sqk] & enemypieces;
+        addMove_bitboard(cb, l, sqk, moves, KING);
+    }
+    else {
+        int sqk = bitScanForward(cb->piece[BLACK][KING]);
+        U64 moves = kingAttacks[sqk] & enemypieces;
+        addMove_bitboard(cb, l, sqk, moves, KING);
+    }
+}
+
+void generateSlidingCaptures(chessboard* cb, moveList* l) {
+    U64 occ = takenSquares(cb);
+    U64 enemypieces = (cb->turn == WHITE) ? blackPieces(cb) : whitePieces(cb);
+
+    U64 bishops = cb->piece[cb->turn][BISHOP];
+    U64 rooks   = cb->piece[cb->turn][ROOK];
+    U64 queens  = cb->piece[cb->turn][QUEEN];
+
+    while(bishops){
+        int sq      = popLSB(&bishops);
+        U64 attacks = bishopAttacks(occ, sq) & enemypieces; 
+        addMove_bitboard(cb, l, sq, attacks, BISHOP);
+    }
+    while(rooks){
+        int sq      = popLSB(&rooks);
+        U64 attacks = rookAttacks(occ, sq) & enemypieces; 
+        addMove_bitboard(cb, l, sq, attacks, ROOK);
+    }
+    while(queens){
+        int sq      = popLSB(&queens);
+        U64 attacks = (bishopAttacks(occ, sq) | rookAttacks(occ, sq)) & enemypieces; 
+        addMove_bitboard(cb, l, sq, attacks, QUEEN);
+    }
+}
+
+void generatePawnCaptures(chessboard* cb, moveList* list){
+    U64 empty = ~takenSquares(cb);
+
+    if(cb->turn == WHITE){
+        U64 pawns = cb->piece[WHITE][PAWN];
+        U64 b_pieces = blackPieces(cb);
+
+        U64 left_cap = (pawns << 7) & b_pieces & ~Hfile;
+        while(left_cap){
+            int to = popLSB(&left_cap);
+            int capturedPiece = what_black_p(cb, serialize(to));
+            if(to >= 56){
+                addMove(list, to - 7, to, PAWN, capturedPiece, QUEEN, NORMAL);
+                addMove(list, to - 7, to, PAWN, capturedPiece, ROOK, NORMAL);
+                addMove(list, to - 7, to, PAWN, capturedPiece, BISHOP, NORMAL);
+                addMove(list, to - 7, to, PAWN, capturedPiece, KNIGHT, NORMAL);
+            } else {
+                addMove(list, to - 7, to, PAWN, capturedPiece, EMPTY, NORMAL);
+            }
+        }
+
+        U64 right_cap = (pawns << 9) & b_pieces & ~Afile;
+        while(right_cap){
+            int to = popLSB(&right_cap);
+            int capturedPiece = what_black_p(cb, serialize(to));
+            if(to >= 56){
+                addMove(list, to - 9, to, PAWN, capturedPiece, QUEEN, NORMAL);
+                addMove(list, to - 9, to, PAWN, capturedPiece, ROOK, NORMAL);
+                addMove(list, to - 9, to, PAWN, capturedPiece, BISHOP, NORMAL);
+                addMove(list, to - 9, to, PAWN, capturedPiece, KNIGHT, NORMAL);
+            } else {
+                addMove(list, to - 9, to, PAWN, capturedPiece, EMPTY, NORMAL);
+            }
+        }
+
+        if((cb->enPassantSquare != -1) && cb->enPassantSquare > 39){
+            U64 candidates = serialize(cb->enPassantSquare);
+            U64 remove_junk = candidates;
+            candidates |= ((((candidates >> 9) & ~Hfile) | ((candidates >> 7) & ~Afile)));
+            candidates &= ~remove_junk;
+            candidates &= cb->piece[WHITE][PAWN];
+            while(candidates){
+                int from = popLSB(&candidates);
+                addMove(list, from, cb->enPassantSquare, PAWN, PAWN, EMPTY, ENPASSANT);
+            }
+        }
+
+        U64 promotions = ((pawns << 8) & empty) & row8;
+        while(promotions){
+            int to   = popLSB(&promotions);
+            addMove(list, to - 8, to, PAWN, EMPTY, QUEEN, NORMAL);
+            addMove(list, to - 8, to, PAWN, EMPTY, ROOK, NORMAL);
+            addMove(list, to - 8, to, PAWN, EMPTY, BISHOP, NORMAL);
+            addMove(list, to - 8, to, PAWN, EMPTY, KNIGHT, NORMAL);
+        }
+
+    } else {
+
+        U64 pawns = cb->piece[BLACK][PAWN];
+        U64 w_pieces = whitePieces(cb);
+
+        U64 left_cap = (pawns >> 7) & w_pieces & ~Afile;
+        while(left_cap){
+            int to = popLSB(&left_cap);
+            int capturedPiece = what_white_p(cb, serialize(to));
+            if(to <= 7) {
+                addMove(list, to + 7, to, PAWN, capturedPiece, QUEEN, NORMAL);
+                addMove(list, to + 7, to, PAWN, capturedPiece, ROOK, NORMAL);
+                addMove(list, to + 7, to, PAWN, capturedPiece, BISHOP, NORMAL);
+                addMove(list, to + 7, to, PAWN, capturedPiece, KNIGHT, NORMAL);
+            } else {
+                addMove(list, to + 7, to, PAWN, capturedPiece, EMPTY, NORMAL);
+            }
+        }
+
+        U64 right_cap = (pawns >> 9) & w_pieces & ~Hfile;
+        while(right_cap){
+            int to = popLSB(&right_cap);
+            int capturedPiece = what_white_p(cb, serialize(to));
+            if(to <= 7) {
+                addMove(list, to + 9, to, PAWN, capturedPiece, QUEEN, NORMAL);
+                addMove(list, to + 9, to, PAWN, capturedPiece, ROOK, NORMAL);
+                addMove(list, to + 9, to, PAWN, capturedPiece, BISHOP, NORMAL);
+                addMove(list, to + 9, to, PAWN, capturedPiece, KNIGHT, NORMAL);
+            } else {
+                addMove(list, to + 9, to, PAWN, capturedPiece, EMPTY, NORMAL);
+            }
+        }
+
+        if((cb->enPassantSquare != -1) && cb->enPassantSquare < 24 && cb->enPassantSquare > 15){
+            U64 candidates = serialize(cb->enPassantSquare);
+            U64 remove_junk = candidates;
+            candidates |= ((candidates << 9) & ~Afile) | ((candidates << 7) & ~Hfile);
+            candidates &= ~remove_junk;
+            candidates &= cb->piece[BLACK][PAWN];
+            while(candidates){
+                int from = popLSB(&candidates);
+                addMove(list, from, cb->enPassantSquare, PAWN, PAWN, EMPTY, ENPASSANT);
+            }
+        }
+
+        U64 promotions = ((pawns >> 8) & empty) & row1;
+        while(promotions){
+            int to   = popLSB(&promotions);
+            addMove(list, to + 8, to, PAWN, EMPTY, QUEEN, NORMAL);
+            addMove(list, to + 8, to, PAWN, EMPTY, ROOK, NORMAL);
+            addMove(list, to + 8, to, PAWN, EMPTY, BISHOP, NORMAL);
+            addMove(list, to + 8, to, PAWN, EMPTY, KNIGHT, NORMAL);
+        }
+    }
+}
+
+void generateCaptures(chessboard* cb, moveList* l){
+
+    generatePawnCaptures(cb, l);
+    generateKnightCaptures(cb, l);
+    generateSlidingCaptures(cb, l);
+    generateKingCaptures(cb, l);
+    
 }

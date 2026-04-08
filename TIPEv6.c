@@ -63,7 +63,7 @@ int quiescence(chessboard* cb, int alpha, int beta){
     moveList l;
     l.count = 0;
     
-    generateMoves(cb, &l);
+    generateCaptures(cb, &l);
 
     int move_scores[256] = {0};
 

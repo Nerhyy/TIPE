@@ -17,9 +17,10 @@
 
 moveList* createList();
 void addMove(moveList* list, int from, int to, int piece, int captured, int promo, int flag);
-moveList* generatePawnMoves(chessboard* cb, moveList* list);
+void generatePawnMoves(chessboard* cb, moveList* list);
 void addMove_bitboard(chessboard* cb, moveList* list, int sq, U64 moves, int piece);
-moveList* generateSlidingMoves(chessboard* cb, moveList* l);
-moveList* generateMoves(chessboard* cb, moveList* l);
+void generateSlidingMoves(chessboard* cb, moveList* l);
+void generateMoves(chessboard* cb, moveList* l);
 void affiche_moveList(moveList* l);
+void generateCaptures(chessboard* cb, moveList* l);
 
