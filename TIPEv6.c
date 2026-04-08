@@ -42,20 +42,13 @@ et c'est tout :)
 #include "arrFrontSpans.h"
 #include "eval.h"
 #include "manhattan_dist.h"
+#include "ordering.h"
 
 
 typedef uint64_t U64;
 
 
-const int mvv_lva_table[7][7] = {
-    {0, 0, 0, 0, 0, 0, 0}, // 0: EMPTY (Pas de capture)
-    {0, 105, 104, 103, 102, 101, 100}, // 1: Pion capturé
-    {0, 205, 204, 203, 202, 201, 200}, // 2: Cavalier capturé
-    {0, 305, 304, 303, 302, 301, 300}, // 3: Fou capturé
-    {0, 405, 404, 403, 402, 401, 400}, // 4: Tour capturée
-    {0, 505, 504, 503, 502, 501, 500}, // 5: Reine capturée
-    {0, 0, 0, 0, 0, 0, 0}              // 6: Roi (n'est techniquement jamais capturé)
-};
+
 
 
 int quiescence(chessboard* cb, int alpha, int beta){
@@ -74,17 +67,7 @@ int quiescence(chessboard* cb, int alpha, int beta){
 
     int move_scores[256] = {0};
 
-    for (int i = 0; i < l.count; i++) {
-        if (l.moves[i].captured != EMPTY) {
-            move_scores[i] = mvv_lva_table[l.moves[i].captured][l.moves[i].piece];
-        } 
-        else if (l.moves[i].promo != EMPTY) {
-            move_scores[i] = 900; 
-        } 
-        else {
-            move_scores[i] = 0; 
-        }
-    }
+    attribute_order_score(move_scores,l);
 
     ld lostdata = create_lostdata2();
 
@@ -157,20 +140,7 @@ int negaMax(chessboard* cb, int depth, int alpha, int beta){
 
     int move_scores[256] = {0};
     //On met un score à chaque move (pour le tri)
-    for (int i = 0; i < l.count; i++) {
-        if (tt_best_move.piece != 0 && l.moves[i].from == tt_best_move.from && l.moves[i].to == tt_best_move.to) {
-            move_scores[i] = 1000000; 
-        } 
-        else if (l.moves[i].captured != EMPTY) {
-            move_scores[i] = mvv_lva_table[l.moves[i].captured][l.moves[i].piece];
-        } 
-        else if (l.moves[i].promo != EMPTY) {
-            move_scores[i] = 900; 
-        } 
-        else {
-            move_scores[i] = 0; 
-        }
-    }
+    attribute_order_score(move_scores,l);
 
     ld lostdata = create_lostdata2();
     move best_move_for_this_node = {0};
