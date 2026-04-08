@@ -3,4 +3,4 @@
 #include "tt.h"
 #include "globals.h"
 
-void attribute_order_score(int move_scores[], moveList l);
+void attribute_order_score(int move_scores[], moveList l, move tt_best_move);

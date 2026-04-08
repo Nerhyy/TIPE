@@ -1,5 +1,7 @@
 #include "ordering.h"
 
+
+
 const int mvv_lva_table[7][7] = {
     {0, 0, 0, 0, 0, 0, 0}, // 0: EMPTY (Pas de capture)
     {0, 105, 104, 103, 102, 101, 100}, // 1: Pion capturé
@@ -10,11 +12,17 @@ const int mvv_lva_table[7][7] = {
     {0, 0, 0, 0, 0, 0, 0}              // 6: Roi (n'est techniquement jamais capturé)
 };
 
-void attribute_order_score(int move_scores[], moveList l){
+void attribute_order_score(int move_scores[], moveList l, move tt_best_move){
     for (int i = 0; i < l.count; i++) {
-        if (l.moves[i].captured != EMPTY) {
+        if (l.moves[i].from == tt_best_move.from && 
+            l.moves[i].to == tt_best_move.to && 
+            l.moves[i].promo == tt_best_move.promo) {
+            
+            move_scores[i] = 1000000; 
+        }
+        else if (l.moves[i].captured != EMPTY) {
             move_scores[i] = mvv_lva_table[l.moves[i].captured][l.moves[i].piece];
-        } 
+        }
         else if (l.moves[i].promo != EMPTY) {
             move_scores[i] = 900; 
         } 

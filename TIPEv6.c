@@ -66,8 +66,9 @@ int quiescence(chessboard* cb, int alpha, int beta){
     generateMoves(cb, &l);
 
     int move_scores[256] = {0};
+    move empty_tt_move = {0};
 
-    attribute_order_score(move_scores,l);
+    attribute_order_score(move_scores,l,empty_tt_move);
 
     ld lostdata = create_lostdata2();
 
@@ -140,7 +141,7 @@ int negaMax(chessboard* cb, int depth, int alpha, int beta){
 
     int move_scores[256] = {0};
     //On met un score à chaque move (pour le tri)
-    attribute_order_score(move_scores,l);
+    attribute_order_score(move_scores,l,tt_best_move);
 
     ld lostdata = create_lostdata2();
     move best_move_for_this_node = {0};
