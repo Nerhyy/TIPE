@@ -285,6 +285,20 @@ move findBestMove_IDS(chessboard* cb, int depth){
         int beta  =  1000000000;
         move bestMoveForThisDepth = {0,0,0,0,0,0};
 
+        if (j > 1) {
+            for (int k = 0; k < n_moves; k++) {
+                if (l->moves[k].from == bestMove.from && 
+                    l->moves[k].to == bestMove.to && 
+                    l->moves[k].promo == bestMove.promo) {
+                    
+                    move temp = l->moves[0];
+                    l->moves[0] = l->moves[k];
+                    l->moves[k] = temp;
+                    break;
+                }
+            }
+        }
+
         for(int i = 0 ; i < n_moves; i++){
             move current_move = l->moves[i];
             

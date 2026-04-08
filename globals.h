@@ -7,7 +7,7 @@
 #include<stdbool.h>
 typedef uint64_t U64; 
 
-#define MAX_DEPTH 8
+#define MAX_DEPTH 9
 
 /////////////////////////////////////////// STRUCTURES | ENUMERATION //////////////////////////////////////////
 
