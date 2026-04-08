@@ -357,7 +357,7 @@ int main(int argc, char* argv[]){
         //printf("From chess engine: Waiting for a fen\n");
         fgets(FEN, sizeof(FEN), stdin);
         chessboard *cb = convert_FEN_to_cb(FEN);
-        print_move(findBestMove_IDS(cb, 9));
+        print_move(findBestMove_IDS(cb, MAX_DEPTH));
         fflush(stdout);
         current_age++;
         //running = false;

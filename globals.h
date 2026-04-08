@@ -7,6 +7,8 @@
 #include<stdbool.h>
 typedef uint64_t U64; 
 
+#define MAX_DEPTH 8
+
 /////////////////////////////////////////// STRUCTURES | ENUMERATION //////////////////////////////////////////
 
 //Type echiquier
