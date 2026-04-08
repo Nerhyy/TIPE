@@ -66,9 +66,8 @@ int quiescence(chessboard* cb, int alpha, int beta){
     generateMoves(cb, &l);
 
     int move_scores[256] = {0};
-    move empty_tt_move = {0};
 
-    attribute_order_score(move_scores,l,empty_tt_move);
+    attribute_quiescence_order_score(move_scores,l);
 
     ld lostdata = create_lostdata2();
 
@@ -118,7 +117,7 @@ int quiescence(chessboard* cb, int alpha, int beta){
     return alpha;
 }
 
-int negaMax(chessboard* cb, int depth, int alpha, int beta){
+int negaMax(chessboard* cb, int depth, int alpha, int beta,int ply){
 
     int originalAlpha = alpha;
 
@@ -141,7 +140,7 @@ int negaMax(chessboard* cb, int depth, int alpha, int beta){
 
     int move_scores[256] = {0};
     //On met un score à chaque move (pour le tri)
-    attribute_order_score(move_scores,l,tt_best_move);
+    attribute_order_score(move_scores,l,tt_best_move,ply);
 
     ld lostdata = create_lostdata2();
     move best_move_for_this_node = {0};
@@ -174,7 +173,7 @@ int negaMax(chessboard* cb, int depth, int alpha, int beta){
         legal_moves_played++;
 
         // Calcul en profondeur (NegaMax)
-        int score = -negaMax(cb, depth - 1, -beta, -alpha); 
+        int score = -negaMax(cb, depth - 1, -beta, -alpha,ply+1); 
         unmakeMove(cb, l.moves[i], &lostdata);
 
         if(score > max){
@@ -187,7 +186,14 @@ int negaMax(chessboard* cb, int depth, int alpha, int beta){
         }
 
         if(alpha >= beta){
-            break; 
+            if (l.moves[i].captured == EMPTY && l.moves[i].promo == EMPTY) {
+                if (killer_moves[ply][0].from != l.moves[i].from || 
+                    killer_moves[ply][0].to != l.moves[i].to) {
+                    killer_moves[ply][1] = killer_moves[ply][0];
+                    killer_moves[ply][0] = l.moves[i];
+                }
+            }
+            break; // Coupure Bêta
         }
     }
 
@@ -208,7 +214,7 @@ int negaMax(chessboard* cb, int depth, int alpha, int beta){
 
 
 
-move findBestMove(chessboard* cb, int depth){
+/*move findBestMove(chessboard* cb, int depth){
 
     move bestMove = {0,0,0,0,0,0};
     int bestScore = -1000000000;
@@ -244,7 +250,7 @@ move findBestMove(chessboard* cb, int depth){
 
     return bestMove;
 
-}
+}*/
 
 
 char FENcaptureQueen[92] = "rnbqkbnr/3p1ppp/2p1B3/1p2P2Q/p7/2N5/PPPP1PPP/R1B1K1NR b KQkq - 0 8" ;
@@ -271,6 +277,7 @@ move findBestMove_IDS(chessboard* cb, int depth){
     ld lostdata = {.castle = -1, .enPassantSquare = -1, .fullmove = -1, .halfmoveclock = -1};
     int n_moves = l->count;
     //Recherche en profondeur du meilleur coup
+    clear_killer_moves();
     for(int j = 1; j <= depth; j++){
         
         int bestScore = -1000000000;
@@ -283,7 +290,7 @@ move findBestMove_IDS(chessboard* cb, int depth){
             
             makeMove_ld(cb,  current_move, &lostdata);
             //Calcul en profondeur
-            int score = -negaMax(cb , j - 1, -beta, -alpha);
+            int score = -negaMax(cb , j - 1, -beta, -alpha, 1);
 
             unmakeMove(cb, current_move, &lostdata);
             
